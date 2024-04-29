@@ -8,49 +8,6 @@
     <div class="mb-4 overflow-scroll" style="max-height: 300px;">
       <h2>total evaluation information & improvement suggestions </h2>
         
-      <!-- Search Form -->
-      <!-- <form id="searchForm" onsubmit="return validateForm()">
-        <div class="input-group mb-3">
-            <input type="text" id="semesterInput" class="form-control" placeholder="Enter semester(eg 20242024SPRING)" aria-label="Enter semester(eg 20242024SPRING)">
-            <button type="submit" class="btn btn-primary">Search</button>
-        </div>
-      </form> -->
-      <!-- Search Form for Evaluations -->
-      
-      <!-- <table class="table">
-          <thead>
-              <tr>
-                  <th scope="col">Course ID</th>
-                  <th scope="col">Section ID</th>
-                  <th scope="col">Semester</th>
-                  <th scope="col">Year</th>
-                  <th scope="col">Is_Suggestions</th>
-                  <th scope="col">Is_Evaluated</th>
-              </tr>
-          </thead>
-          <tbody>
-            <td>CS7330</td>
-            <td>Spring</td>
-            <td>2024SPRING</td>
-            <td>2024</td>
-            <td>ENTERD</td>
-            <td>NOT ENTERD</td>
-          </tbody>
-      </table>
-  </div> -->
-<!-- 
-  <script>
-    function searchSemester() {
-        var semester = document.getElementById("semesterInput").value.trim();
-        if (semester === "") {
-            alert("Semester cannot be empty.");
-            return false;
-        }
-        // 如果有输入，则显示表格
-        document.getElementById("evaluationsTable").style.display = "";
-        return false;  // 阻止表单实际提交
-    }
-  </script>  -->
       <form action="{% url 'university:evaluationquery' %}" method="get">
         <div class="input-group mb-3">
             <input type="text" id="semesterInput" name="semester" class="form-control" placeholder="Enter semester (e.g., 2024Spring)" aria-label="Enter semester">
@@ -58,63 +15,42 @@
         </div>
       </form>
       {% if initial_load %}
-          <p>Please enter a semester and submit to see data.</p>
-      {% elif message %}
-          <p>{{ message }}</p>
-      {% elif queryset %}
-      <!-- Table to display evaluations -->
-      <div>Suggestions: {{ suggestions_status }}</div>
-      <div>Evaluated: {{ evaluated_status }}</div>
-      <table class="table" id="evaluationsTable">
-        <thead>
-            <tr>
-                <th scope="col">Course ID</th>
-                <th scope="col">Section ID</th>
-                <th scope="col">Semester</th>
-                <th scope="col">Year</th>
-                <th scope="col">Suggestions</th>
-                <th scope="col">Evaluated</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Dynamic data filling from queryset -->
-            {% for eval in queryset %}
-            <tr>
-                <td>{{ eval.course.course_id }}</td>
-                <td>{{ eval.section.section_id }}</td>
-                <td>{{ eval.section.semester }}</td>
-                <td>{{ eval.section.year }}</td>
-                <td>{{ eval.improvement_suggestions|default:"Not entered" }}</td>
-                <td>{% if eval.levelA_stu_num or eval.levelB_stu_num or eval.levelC_stu_num or eval.levelF_stu_num %}Yes{% else %}No{% endif %}</td>
-            </tr>
-                {% empty %}
-            <tr>
-                <td colspan="6">No data available.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% elif error %}
-    <div class="alert alert-danger" role="alert">
-        {{ error }}
-    </div>
-    {% endif %}
-  </div>
+            <p>Please enter a semester and submit to see data.</p>
+        {% elif message %}
+            <p>{{ message }}</p>
+        {% elif error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% elif unique_courses %}
+            <table class="table" id="evaluationsTable">
+                <thead>
+                    <tr>
+                        <th scope="col">Course ID</th>
+                        <th scope="col">Section ID</th>
+                        <th scope="col">Semester</th>
+                        <th scope="col">Year</th>
+                        <th scope="col">Suggestions</th>
+                        <th scope="col">Evaluated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for course in unique_courses %}
+                    <tr>
+                        <td>{{ course.course__course_id }}</td>
+                        <td>{{ course.section__section_id }}</td>
+                        <td>{{ semester }}</td>
+                        <td>{{ year }}</td>
+                        <td>{{ course.suggestions_status }}</td>
+                        <td>{{ course.evaluated_status }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6">No data available.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
 
-  <!-- 及格率表 -->
-  <!-- <div class="mb-4 overflow-scroll" style="max-height: 300px;">
-    <h2>pass rate</h2>
-    <form action="{% url 'university:evaluationquery' %}" method="get">
-        <div class="input-group mb-3">
-            <input type="text" name="semester" class="form-control" placeholder="Enter semester (e.g., 2024Spring)" aria-label="Enter semester">
-            <input type="text" name="percentage" class="form-control" placeholder="Enter percentage" aria-label="Enter percentage">
-            <button type="submit" class="btn btn-primary">Submit</button>
-        </div>
-    </form>
-
-    {% if pass_rate_status %}
-    <div>Pass Rate Status: {{ pass_rate_status }}</div>
-    {% endif %}
-  </div> -->
+     </div>
 </div>
 {% endblock %}
