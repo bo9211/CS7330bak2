@@ -11,8 +11,29 @@
             <button type="submit" class="btn btn-primary">Search</button>
         </div>
     </form>
-    {% if pass_rate %}
-        <div class="alert alert-success">{{ pass_rate }}</div>
+    {% if course_pass_rates %}
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Semester</th>
+                <th>Year</th>
+                <th>Course ID</th>
+                <th>Section ID</th>
+                <th>Pass Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for course in course_pass_rates %}
+            <tr>
+                <td>{{ course.semester }}</td>
+                <td>{{ course.year }}</td>
+                <td>{{ course.course_id }}</td>
+                <td>{{ course.section_id }}</td>
+                <td>{{ course.pass_rate|floatformat:2 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
     {% elif message %}
         <div class="alert alert-info">{{ message }}</div>
     {% elif error %}
