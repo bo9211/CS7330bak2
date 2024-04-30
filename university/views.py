@@ -576,7 +576,15 @@ def degree_details(request):
 
         if degree:
             courses = models.Course.objects.filter(degreecourse__degree=degree)
-            sections = models.Section.objects.filter(degree_id=degree).order_by('-year', 'semester')
+
+            degree_courses = models.DegreeCourse.objects.filter(degree_id=degree)
+
+            # 获取这些课程的 ID 列表
+            course_ids = degree_courses.values_list('course_id', flat=True)
+
+            # 使用获取到的 course_ids 查询 Section 表
+            sections = models.Section.objects.filter(course_id__in=course_ids).order_by('-year', 'semester')
+
 
             objectives = models.Objective.objects.filter(
                 course__degreecourse__degree_id=degree
@@ -595,6 +603,7 @@ def degree_details(request):
             })
 
     return render(request, 'university/degree/degree_result.html', context)
+
 
 
 
@@ -642,7 +651,12 @@ def evaluation_detail(request, id):
         semester = form.cleaned_data['semester']
         year = form.cleaned_data['year']
         # Retrieve courses for the given instructor and semester
-        sections = models.Section.objects.filter(instructor=instructor, semester=semester, year=year, degree=degree)
+        sections = models.Section.objects.filter(
+            course__degreecourse__degree=degree,
+            instructor=instructor,
+            semester=semester,
+            year=year
+        )
         return render(
             request,
             'university/evaluation/enter_evaluations.html',
