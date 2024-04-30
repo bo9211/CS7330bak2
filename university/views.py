@@ -376,7 +376,7 @@ def evaluationquery(request):
                     'course__course_id', 'section__section_id', 'section__semester', 'section__year'
                 ).annotate(
                     count=Count('evaluate_id'),
-                    filled_suggestions_count=Count('improvement_suggestions', filter=Q(improvement_suggestions__isnull=False)),
+                    filled_suggestions_count=Count('improvement_suggestions', filter=Q(improvement_suggestions__isnull=False) & ~Q(improvement_suggestions='')),
                     filled_evaluation_count=Count('evaluate_id', filter=Q(levelA_stu_num__isnull=False, levelB_stu_num__isnull=False, levelC_stu_num__isnull=False, levelF_stu_num__isnull=False)),
                 ).distinct()
 
