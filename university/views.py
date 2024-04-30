@@ -2,15 +2,10 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render,redirect ,get_object_or_404
 from university import models ,forms
 from django.contrib import messages
-<<<<<<< HEAD
 from django.db.models import Case, When, Value,CharField,Q, Count
 from django.shortcuts import render
-=======
-
 from django.db.models import Case, When, Value,CharField,Q, Count
 from django.shortcuts import render
-
->>>>>>> 60eb5adf92a4f25b89f73561ebe4e467a6e26bce
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
@@ -296,7 +291,7 @@ def add_evaluation(request):
         return render(request, 'university/evaluation/add_evaluation.html', {
             'courses': courses,
             'degrees': degrees,
-            'sections': sections
+            'sections': sections,
         })
     else:
         
@@ -315,7 +310,6 @@ def add_evaluation(request):
         course = models.Course.objects.filter(course_id=course_id).first()
         degree = models.Degree.objects.filter(id=degree_id).first()
         section = models.Section.objects.filter(id=section_id).first()
-
        
         new_evaluation = models.Evaluation(
             evaluate_id=evaluate_id,
@@ -327,7 +321,8 @@ def add_evaluation(request):
             improvement_suggestions=improvement_suggestions,
             course=course,
             degree=degree,
-            section=section  
+            section=section,
+            
         )
         new_evaluation.save()
 
