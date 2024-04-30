@@ -2,8 +2,13 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render,redirect ,get_object_or_404
 from university import models ,forms
 from django.contrib import messages
+<<<<<<< HEAD
 
 
+=======
+from django.db.models import Case, When, Value,CharField,Q, Count
+from django.shortcuts import render
+>>>>>>> e015fb8a7df82ed43ee5679fbe7c2943557d113b
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
@@ -400,98 +405,116 @@ def edit_evaluation(request, Evaluate_Id):
                                  improvement_suggestions=Improvement_Suggestions,degree_id=Degree_Id, section_id=Section_Id,course_id=Course_Id)
     return redirect("/evaluation/")
 
- # Queries involving evaluations
-# def evaluationquery(request):
-#     queryset = models.Evaluation.objects.all()
-#     return render(request, 'university/evaluation/evaluationquery.html',{'queryset':queryset})
 
-# def evaluationquery(request):
-#     semester_param = request.GET.get('semester', None)
-#     percentage_param = request.GET.get('percentage', None)
+ 
+def evaluationquery(request):
+    semester_param = request.GET.get('semester', None)
+    context = {'initial_load': True}
 
-#     if semester_param is None and percentage_param is None:
-#         # 第一次加载页面时不显示警告
-#         return render(request, 'university/evaluation/evaluationquery.html', {'initial_load': True})
-    
-#     if semester_param == '':
-#         # 如果semester参数为空，显示警告
-#         return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Semester is required.'})
+    if semester_param and len(semester_param) > 4:
+        year = semester_param[:4]
+        semester = semester_param[4:]
+        if year.isdigit() and semester.isalpha():
+            evaluations = models.Evaluation.objects.filter(
+                section__semester=semester, 
+                section__year=int(year)
+            )
 
-#     # 处理及格率查询
-#     if percentage_param:
-#         if percentage_param == '':
-#             return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Percentage is required.'})
-#         return handle_pass_rate_query(request, semester_param, percentage_param)
-    
-#     # 处理总体评估信息查询
-#     return handle_total_evaluation_query(request, semester_param)
+            if not evaluations:
+                context['message'] = 'No data available for the provided semester.'
+            else:
+                unique_courses = evaluations.values(
+                    'course__course_id', 'section__section_id', 'section__semester', 'section__year'
+                ).annotate(
+                    count=Count('evaluate_id'),
+                    filled_suggestions_count=Count('improvement_suggestions', filter=Q(improvement_suggestions__isnull=False)),
+                    filled_evaluation_count=Count('evaluate_id', filter=Q(levelA_stu_num__isnull=False, levelB_stu_num__isnull=False, levelC_stu_num__isnull=False, levelF_stu_num__isnull=False)),
+                ).distinct()
 
-# def handle_total_evaluation_query(request, semester_param):
-#     if len(semester_param) >= 6:
-#         year = semester_param[:4]
-#         semester = semester_param[4:]
-#         queryset = models.Evaluation.objects.filter(
-#             section__semester=semester, 
-#             section__year=int(year)
-#         )
-#         if queryset.exists():
-#             return render(request, 'university/evaluation/evaluationquery.html', {'queryset': queryset})
-#         else:
-#             return render(request, 'university/evaluation/evaluationquery.html', {'message': 'No data available for the provided semester.'})
-#     else:
-#         return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Invalid semester format.'})
+                # 计算每个组合的“Suggestions”和“Evaluated”状态
+                for course in unique_courses:
+                    course['suggestions_status'] = calculate_status(course['filled_suggestions_count'], course['count'])
+                    course['evaluated_status'] = calculate_status(course['filled_evaluation_count'], course['count'])
+
+                context.update({
+                    'unique_courses': unique_courses,
+                    'semester': semester,
+                    'year': year,
+                    'initial_load': False
+                })
+        else:
+            context['error'] = 'Invalid semester format.'
+    else:
+        context['error'] = 'Please enter a valid semester (e.g., 2024Fall).'
+
+    return render(request, 'university/evaluation/evaluationquery.html', context)
+
+
+def calculate_status(filled_count, total_count):
+    if filled_count == 0:
+        return 'Not entered'
+    elif filled_count < total_count:
+        return 'Partly entered'
+    else:
+        return 'Entered'
+
+
+# # 及格率查询
 # def handle_pass_rate_query(request, semester_param, percentage_param):
-#     if len(semester_param) >= 6:
+#     try:
 #         year = semester_param[:4]
 #         semester = semester_param[4:]
 #         queryset = models.Evaluation.objects.filter(
-#             section__semester=semester, 
+#             section__semester=semester,
 #             section__year=int(year)
 #         )
-#         if not queryset.exists():
-#             return render(request, 'university/evaluation/evaluationquery.html', {'percentage_message': 'No data available for the provided semester.'})
-
+#         if not queryset:
+#             return render(request, 'university/evaluation/passratequery.html', {'message': 'No evaluations found for the provided semester.'})
+        
 #         total_passed = total_students = 0
 #         for eval in queryset:
-#             total_passed += eval.levelA_stu_num + eval.levelB_stu_num + eval.levelC_stu_num
-#             total_students += eval.levelA_stu_num + eval.levelB_stu_num + eval.levelC_stu_num + eval.levelF_stu_num
+#             # Check if all fields are filled
+#             if eval.levelA_stu_num is None or eval.levelB_stu_num is None or eval.levelC_stu_num is None or eval.levelF_stu_num is None:
+#                 continue  # Skip this evaluation as it is incomplete
+
+#             levelA = eval.levelA_stu_num
+#             levelB = eval.levelB_stu_num
+#             levelC = eval.levelC_stu_num
+#             levelF = eval.levelF_stu_num
+
+#             passed = levelA + levelB + levelC
+#             total = passed + levelF
+
+#             if total > 0:
+#                 total_passed += passed
+#                 total_students += total
 
 #         if total_students > 0:
 #             pass_rate = (total_passed / total_students) * 100
 #             if pass_rate >= float(percentage_param):
-#                 return render(request, 'university/evaluation/evaluationquery.html', {'percentage_result': f'Pass rate is {pass_rate:.2f}%, which is above or equal to the threshold of {percentage_param}%.'})
+#                 return render(request, 'university/evaluation/passratequery.html', {
+#                     'pass_rate': f'Pass rate is {pass_rate:.2f}% and meets or exceeds the threshold of {percentage_param}%.'})
 #             else:
-#                 return render(request, 'university/evaluation/evaluationquery.html', {'percentage_result': f'Pass rate is {pass_rate:.2f}%, which is below the threshold of {percentage_param}%.'})
+#                 return render(request, 'university/evaluation/passratequery.html', {
+#                     'pass_rate': f'Pass rate is {pass_rate:.2f}% and does not meet the threshold of {percentage_param}%.'})
 #         else:
-#             return render(request, 'university/evaluation/evaluationquery.html', {'percentage_message': 'No students data available to calculate pass rate.'})
-#     else:
-#         return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Invalid semester format.'})
+#             return render(request, 'university/evaluation/passratequery.html', {'message': 'No complete student data available to calculate pass rate.'})
 
-def evaluationquery(request):
-    semester_param = request.GET.get('semester', None)  # None表示未指定时默认值
-    if semester_param is None:
-        # 第一次加载页面时不显示警告
-        return render(request, 'university/evaluation/evaluationquery.html', {'initial_load': True})
-    elif semester_param == '':
-        # 如果参数为空字符串，显示警告
-        return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Semester is required.'})
+#     except ValueError:
+#         return render(request, 'university/evaluation/passratequery.html', {'error': 'Invalid semester format or percentage value.'})
 
-    # 处理正常情况，即用户已输入semester
-    if len(semester_param) >= 6:
-        year = semester_param[:4]
-        semester = semester_param[4:]
-        queryset = models.Evaluation.objects.filter(
-            section__semester=semester, 
-            section__year=int(year)
-        )
-        if queryset.exists():
-            return render(request, 'university/evaluation/evaluationquery.html', {'queryset': queryset})
-        else:
-            return render(request, 'university/evaluation/evaluationquery.html', {'message': 'No data available for the provided semester.'})
-    else:
-        # 格式错误的处理
-        return render(request, 'university/evaluation/evaluationquery.html', {'error': 'Invalid semester format.'})
+# # 及格率查询
+# def passratequery(request):
+#     semester_param = request.GET.get('semester', None)
+#     percentage_param = request.GET.get('percentage', None)
+#     if semester_param is None or percentage_param is None:
+#         return render(request, 'university/evaluation/passratequery.html', {'initial_load': True})
+#     if semester_param == '' or percentage_param == '':
+#         return render(request, 'university/evaluation/passratequery.html', {'error': 'Both semester and percentage are required.'})
     
+#     return handle_pass_rate_query(request, semester_param, percentage_param)
+
+# 及格率查询辅助函数
 def handle_pass_rate_query(request, semester_param, percentage_param):
     try:
         year = semester_param[:4]
@@ -499,43 +522,48 @@ def handle_pass_rate_query(request, semester_param, percentage_param):
         queryset = models.Evaluation.objects.filter(
             section__semester=semester,
             section__year=int(year)
-        )
+        ).exclude(
+            levelA_stu_num__isnull=True,
+            levelB_stu_num__isnull=True,
+            levelC_stu_num__isnull=True,
+            levelF_stu_num__isnull=True
+        )  # 排除未完全评估的数据
+
+        course_pass_rates = []
         if not queryset:
             return render(request, 'university/evaluation/passratequery.html', {'message': 'No evaluations found for the provided semester.'})
         
-        total_passed = total_students = 0
         for eval in queryset:
-            # Check if all fields are filled
-            if eval.levelA_stu_num is None or eval.levelB_stu_num is None or eval.levelC_stu_num is None or eval.levelF_stu_num is None:
-                continue  # Skip this evaluation as it is incomplete
-
-            levelA = eval.levelA_stu_num
-            levelB = eval.levelB_stu_num
-            levelC = eval.levelC_stu_num
-            levelF = eval.levelF_stu_num
+            levelA = eval.levelA_stu_num or 0
+            levelB = eval.levelB_stu_num or 0
+            levelC = eval.levelC_stu_num or 0
+            levelF = eval.levelF_stu_num or 0
 
             passed = levelA + levelB + levelC
             total = passed + levelF
 
             if total > 0:
-                total_passed += passed
-                total_students += total
+                pass_rate = (passed / total) * 100
+                if pass_rate >= float(percentage_param):
+                    course_pass_rates.append({
+                        'semester': semester,
+                        'year': year,
+                        'course_id': eval.course.course_id,
+                        'section_id': eval.section.section_id,
+                        'pass_rate': pass_rate
+                    })
 
-        if total_students > 0:
-            pass_rate = (total_passed / total_students) * 100
-            if pass_rate >= float(percentage_param):
-                return render(request, 'university/evaluation/passratequery.html', {
-                    'pass_rate': f'Pass rate is {pass_rate:.2f}% and meets or exceeds the threshold of {percentage_param}%.'})
-            else:
-                return render(request, 'university/evaluation/passratequery.html', {
-                    'pass_rate': f'Pass rate is {pass_rate:.2f}% and does not meet the threshold of {percentage_param}%.'})
+        if course_pass_rates:
+            return render(request, 'university/evaluation/passratequery.html', {
+                'course_pass_rates': course_pass_rates
+            })
         else:
-            return render(request, 'university/evaluation/passratequery.html', {'message': 'No complete student data available to calculate pass rate.'})
+            return render(request, 'university/evaluation/passratequery.html', {'message': 'No sections meet the threshold.'})
 
     except ValueError:
         return render(request, 'university/evaluation/passratequery.html', {'error': 'Invalid semester format or percentage value.'})
 
-# 及格率查询
+# 及格率查询视图
 def passratequery(request):
     semester_param = request.GET.get('semester', None)
     percentage_param = request.GET.get('percentage', None)
@@ -545,7 +573,6 @@ def passratequery(request):
         return render(request, 'university/evaluation/passratequery.html', {'error': 'Both semester and percentage are required.'})
     
     return handle_pass_rate_query(request, semester_param, percentage_param)
-
 
 
 
@@ -600,10 +627,11 @@ def degree_details(request):
 
         if degree:
             courses = models.Course.objects.filter(degreecourse__degree=degree)
-            sections = models.Section.objects.filter().order_by('-year', 'semester')
+            sections = models.Section.objects.filter(degree_id=degree).order_by('-year', 'semester')
 
-            objectives = models.Objective.objects.all()
-
+            objectives = models.Objective.objects.filter(
+                course__degreecourse__degree_id=degree
+            )
             objectives_courses = {
                 objective: models.Course.objects.filter(objective=objective)
                 for objective in objectives
