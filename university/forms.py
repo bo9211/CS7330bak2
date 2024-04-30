@@ -61,4 +61,4 @@ class DegreeCopyForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super(DegreeCopyForm, self).__init__(*args, **kwargs)
         self.fields['source_degree'].label_from_instance = lambda obj: f"{obj.degree_name} ({obj.degree_level})"
-        self.fields['target_degrees'].label_from_instance = l
+        self.fields['target_degrees'].label_from_instance = lambda obj: f"{obj.degree_name} ({obj.degree_level})"

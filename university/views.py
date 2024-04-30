@@ -2,7 +2,7 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render,redirect ,get_object_or_404
 from university import models ,forms
 from django.contrib import messages
-from django.db.models import Case, When, Value, CharField, Q, Count
+from django.db.models import Case, When, Value,CharField,Q, Count
 from django.shortcuts import render
 # Course
 def course(request):
@@ -497,10 +497,11 @@ def degree_details(request):
 
         if degree:
             courses = models.Course.objects.filter(degreecourse__degree=degree)
-            sections = models.Section.objects.filter().order_by('-year', 'semester')
+            sections = models.Section.objects.filter(degree_id=degree).order_by('-year', 'semester')
 
-            objectives = models.Objective.objects.all()
-
+            objectives = models.Objective.objects.filter(
+                course__degreecourse__degree_id=degree
+            )
             objectives_courses = {
                 objective: models.Course.objects.filter(objective=objective)
                 for objective in objectives
