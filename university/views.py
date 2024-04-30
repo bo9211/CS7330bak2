@@ -322,7 +322,6 @@ def add_evaluation(request):
             course=course,
             degree=degree,
             section=section,
-            
         )
         new_evaluation.save()
 
