@@ -49,7 +49,6 @@
                                 <th scope="col">Improvement_Suggestions</th>
                                 <th scope="col">Course_Id</th>
                                 <th scope="col">Section_Id</th>
-                                <th scope="col">Degree_Id</th>
                                 <th scope="col">Degree_name</th>
                                 <th scope="col">Degree_Level</th>
                                 <th scope="col">Operations</th>
@@ -69,9 +68,8 @@
                                     <td>{{ obj.levelC_stu_num }}</td>
                                     <td>{{ obj.levelF_stu_num }}</td>
                                     <td>{{ obj.improvement_suggestions }}</td>
-                                    <td>{{ obj.course_id }}</td>
-                                    <td>{{ obj.section_id }}</td>
-                                    <td>{{ obj.degree_id }}</td>
+                                    <td>{{ obj.course.course_id }}</td>
+                                    <td>{{ obj.section.section_id }}</td>
                                     <td>{{ obj.degree.name }}</td>
                                     <td>{{ obj.degree.level }}</td>
                                     <td>

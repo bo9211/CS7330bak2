@@ -3,6 +3,7 @@ from django.shortcuts import render,redirect ,get_object_or_404
 from university import models ,forms
 from django.contrib import messages
 
+
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
@@ -66,33 +67,33 @@ def edit_degree(request, Name):
 
 # DegreeCourse
 def degreecourse(request):
-    queryset = models.DegreeCourse.objects.all()
-    return render(request, 'university/degreecourse/degreecourse.html',{'queryset':queryset})
+    queryset = models.DegreeCourse.objects.select_related('degree', 'course').all()
+    return render(request, 'university/degreecourse/degreecourse.html', {'queryset': queryset})
+
 
 def add_degreecourse(request):
+    courses = models.Course.objects.all()
+    degrees = models.Degree.objects.all()
     if request.method == "POST":
         is_core = request.POST.get("is_core", "False") == "True"
         course_id = request.POST.get("course_id")
         degree_id = request.POST.get("degree_id")
         
-        try:
-            course = models.Course.objects.get(course_id=course_id)
-            degree = models.Degree.objects.get(pk=degree_id)
-        except models.Course.DoesNotExist:
-            return HttpResponse("The specified course does not exist.", status=404)
-        except models.Degree.DoesNotExist:
-            return HttpResponse("The specified degree does not exist.", status=404)
+        course = get_object_or_404(models.Course, course_id=course_id)
+        degree = get_object_or_404(models.Degree, pk=degree_id)
 
-        try:
-            degree_course = models.DegreeCourse.objects.create(
-                is_core=is_core,
-                course=course,
-                degree=degree
-            )
-        except Exception as e:
-            return HttpResponse(f"An error occurred when creating the DegreeCourse: {e}", status=400)
+        models.DegreeCourse.objects.create(
+            is_core=is_core,
+            course=course,
+            degree=degree
+        )
         return redirect("/degreecourse/")  
-    return render(request, 'university/degreecourse/add_degreecourse.html')
+    else:
+        return render(request, 'university/degreecourse/add_degreecourse.html', {
+            'courses': courses,
+            'degrees': degrees
+        })
+
 
 def delete_degreecourse(request):
     course_id = request.GET.get('course_id')
@@ -130,11 +131,23 @@ def instructor(request):
 
 def add_instructor(request):
     if request.method == "GET":
-        return render(request,'university/instructor/add_instructor.html')
+        return render(request, 'university/instructor/add_instructor.html')
+
     Id = request.POST.get("id")
     Name = request.POST.get("name")
+    
+    # Check whether the same id or name already exists in the database
+    if models.Instructor.objects.filter(id=Id).exists() or models.Instructor.objects.filter(name=Name).exists():
+        # If so, an error message is returned and the add form is returned
+        messages.error(request, 'Duplicate instructor information cannot be added.')
+        return render(request, 'university/instructor/add_instructor.html', {'id': Id, 'name': Name})
+    
+    # If it does not exist, create a new instructor and redirect to the instructor list
     models.Instructor.objects.create(id=Id, name=Name)
+    messages.success(request, 'Instructor added successfully!')
     return redirect("/instructor/")
+
+
 
 def delete_instructor(request):
     Id = request.GET.get("id")
@@ -152,24 +165,50 @@ def edit_instructor(request, Id):
 
 # Section
 def section(request):
-    queryset = models.Section.objects.all()
-    return render(request, 'university/section/section.html',{'queryset':queryset})
+    queryset = models.Section.objects.select_related('course', 'degree', 'instructor').all()
+    return render(request, 'university/section/section.html', {'queryset': queryset})
 
 def add_section(request):
     if request.method == "GET":
-        return render(request,'university/section/add_section.html')
-    Section_Id = request.POST.get("section_id")
-    Degree_Id = request.POST.get("degree_id")
-    Instructor_Id = request.POST.get("instructor_id")
-    Course_Id = request.POST.get("course_id")
-    Semester = request.POST.get("semester")
-    Year = request.POST.get("year")
-    Enrolled_Stu_Num = request.POST.get("enrolled_stu_num")
-    
-    models.Section.objects.create(degree_id=Degree_Id,section_id=Section_Id,course_id=Course_Id, 
-                                  instructor_id=Instructor_Id, semester=Semester,
-                                  year=Year, enrolled_stu_num=Enrolled_Stu_Num)
-    return redirect("/section/")
+        # Get all course, degree, and faculty information for drop-down menus
+        courses = models.Course.objects.all()
+        degrees = models.Degree.objects.all()
+        instructors = models.Instructor.objects.all()
+        return render(request, 'university/section/add_section.html', {
+            'courses': courses,
+            'degrees': degrees,
+            'instructors': instructors
+        })
+    else:
+        # Get the form data from the POST request
+        section_id = request.POST.get("section_id")
+        course_id = request.POST.get("course_id")
+        degree_id = request.POST.get("degree_id")
+        instructor_id = request.POST.get("instructor_id")
+        semester = request.POST.get("semester")
+        year = request.POST.get("year")
+        enrolled_stu_num = request.POST.get("enrolled_stu_num")
+
+        # Access to relevant courses, degrees, and faculty
+        course = models.Course.objects.get(course_id=course_id)
+        degree = models.Degree.objects.get(id=degree_id)
+        instructor = models.Instructor.objects.get(id=instructor_id)
+
+        # Create a new course section instance and save it to the database
+        new_section = models.Section(
+            section_id=section_id,
+            course=course,
+            degree=degree,
+            instructor=instructor,
+            semester=semester,
+            year=int(year),  # Make sure the year is an integer
+            enrolled_stu_num=int(enrolled_stu_num)  # Make sure the number of students is a whole number
+        )
+        new_section.save()
+
+        # Redirect to the Course section list page after saving
+        return redirect("/section/")
+
 
 def delete_section(request):
     Section_Id = request.GET.get("section_id")
@@ -196,18 +235,32 @@ def edit_section(request, Section_Id):
 
 # Objective
 def objective(request):
-    queryset = models.Objective.objects.all()
+    queryset = models.Objective.objects.select_related('course').all()
     return render(request, 'university/objective/objective.html',{'queryset':queryset})
 
 def add_objective(request):
     if request.method == "GET":
-        return render(request,'university/objective/add_objective.html')
-    Objective_Code = request.POST.get("objective_code")
-    Title = request.POST.get("title")
-    Description = request.POST.get("description")
-    Course_Id = request.POST.get("course_id")
-    models.Objective.objects.create(objective_code=Objective_Code,  title= Title, description=Description,course_id=Course_Id)
-    return redirect("/objective/")
+        courses = models.Course.objects.all()
+        return render(request,'university/objective/add_objective.html',{
+             'courses': courses
+        })
+    else:         
+        objective_code = request.POST.get("objective_code")
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+        course_id = request.POST.get("course_id")
+        
+        course = models.Course.objects.get(course_id=course_id)
+
+        new_objective = models.Objective(
+            objective_code=objective_code,
+            title=title,
+            description=description,
+            course=course
+        )
+        new_objective.save()
+        
+        return redirect("/objective/")
 
 def delete_objective(request):
     Objective_Code = request.GET.get("objective_code")
@@ -227,27 +280,100 @@ def edit_objective(request, Objective_Code):
 
 # Evaluation
 def evaluation(request):
-    queryset = models.Evaluation.objects.all()
+    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section').all()
     return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
+
+# def add_evaluation(request):
+#     if request.method == "GET":
+#         courses = models.Course.objects.all()
+#         degrees = models.Degree.objects.all()
+#         sections = models.Section.objects.all()
+#         return render(request,'university/evaluation/add_evaluation.html',{
+#          'courses': courses,
+#          'degrees': degrees,
+#          'sections': sections
+#         })
+#     else:
+#         evaluate_id = request.POST.get("evaluate_id")
+#         method = request.POST.get("method")
+#         levelA_stu_num = request.POST.get("levelA_stu_num")
+#         levelB_stu_num = request.POST.get("levelB_stu_num")
+#         levelC_stu_num = request.POST.get("levelC_stu_num")
+#         levelF_stu_num = request.POST.get("levelF_stu_num")
+#         improvement_suggestions = request.POST.get("improvement_suggestions")
+#         degree_id = request.POST.get("degree_id")
+#         section_id = request.POST.get("section_id")
+#         course_id = request.POST.get("course_id")
+        
+#         course = models.Course.objects.get(course_id=course_id)
+#         degree = models.Degree.objects.get(id=degree_id)
+#         section = models.Section.objects.get(id=section_id)
+        
+#         new_evaluation = models.Evaluation(
+#             evaluate_id = evaluate_id,
+#             method = method,
+#             levelA_stu_num = levelA_stu_num,
+#             levelB_stu_num = levelB_stu_num,
+#             levelC_stu_num = levelC_stu_num,
+#             levelF_stu_num = levelF_stu_num,
+#             improvement_suggestions = improvement_suggestions,
+#             course=course,
+#             degree=degree,
+#             section=section  
+#         )
+#         new_evaluation.save()
+        
+#         return redirect("/evaluation/")
+
+from django.shortcuts import redirect, render
+from django.http import HttpResponseRedirect
+from . import models
 
 def add_evaluation(request):
     if request.method == "GET":
-        return render(request,'university/evaluation/add_evaluation.html')
-    Evaluate_Id = request.POST.get("evaluate_id")
-    Method = request.POST.get("method")
-    LevelA_Stu_Num = request.POST.get("levelA_stu_num")
-    LevelB_Stu_Num = request.POST.get("levelB_stu_num")
-    LevelC_Stu_Num = request.POST.get("levelC_stu_num")
-    LevelF_Stu_Num = request.POST.get("levelF_stu_num")
-    Improvement_Suggestions = request.POST.get("improvement_suggestions")
-    Degree_Id = request.POST.get("degree_id")
-    Section_Id = request.POST.get("section_id")
-    Course_Id = request.POST.get("course_id")
-    models.Evaluation.objects.create(evaluate_id=Evaluate_Id, method=Method, 
-                                 levelA_stu_num=LevelA_Stu_Num, levelB_stu_num=LevelB_Stu_Num,
-                                 levelC_stu_num=LevelC_Stu_Num,levelF_stu_num=LevelF_Stu_Num,
-                                 improvement_suggestions=Improvement_Suggestions,degree_id=Degree_Id,section_id=Section_Id,course_id=Course_Id)
-    return redirect("/evaluation/")
+        courses = models.Course.objects.all()
+        degrees = models.Degree.objects.all()
+        sections = models.Section.objects.all()
+        return render(request, 'university/evaluation/add_evaluation.html', {
+            'courses': courses,
+            'degrees': degrees,
+            'sections': sections
+        })
+    else:
+        # 读取POST数据，没有数据时设为None
+        evaluate_id = request.POST.get("evaluate_id")
+        method = request.POST.get("method")
+        levelA_stu_num = request.POST.get("levelA_stu_num", None) or None
+        levelB_stu_num = request.POST.get("levelB_stu_num", None) or None
+        levelC_stu_num = request.POST.get("levelC_stu_num", None) or None
+        levelF_stu_num = request.POST.get("levelF_stu_num", None) or None
+        improvement_suggestions = request.POST.get("improvement_suggestions", None)
+        course_id = request.POST.get("course_id")
+        section_id = request.POST.get("section_id")
+        degree_id = request.POST.get("degree_id")
+
+        # 为ForeignKey字段获取实例，如果没有提供则为None
+        course = models.Course.objects.filter(course_id=course_id).first()
+        degree = models.Degree.objects.filter(id=degree_id).first()
+        section = models.Section.objects.filter(id=section_id).first()
+
+        # 创建新的Evaluation实例
+        new_evaluation = models.Evaluation(
+            evaluate_id=evaluate_id,
+            method=method,
+            levelA_stu_num=levelA_stu_num,
+            levelB_stu_num=levelB_stu_num,
+            levelC_stu_num=levelC_stu_num,
+            levelF_stu_num=levelF_stu_num,
+            improvement_suggestions=improvement_suggestions,
+            course=course,
+            degree=degree,
+            section=section  
+        )
+        new_evaluation.save()
+
+        return redirect("/evaluation/")  # 确保重定向到正确的URL
+
 
 def delete_evaluation(request):
     Evaluate_Id = request.GET.get("evaluate_id")
