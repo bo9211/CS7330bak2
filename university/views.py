@@ -2,13 +2,10 @@ from django.http import HttpResponse, Http404
 from django.shortcuts import render,redirect ,get_object_or_404
 from university import models ,forms
 from django.contrib import messages
-<<<<<<< HEAD
 
-
-=======
 from django.db.models import Case, When, Value,CharField,Q, Count
 from django.shortcuts import render
->>>>>>> e015fb8a7df82ed43ee5679fbe7c2943557d113b
+
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
@@ -714,53 +711,37 @@ def evaluation_detail(request, id):
         }
     )
 
-def copy_evaluation(request ):
-        if request.method == 'POST':
-            form = forms.DegreeCopyForm(request.POST)
+def copy_evaluation(request):
+    if request.method == 'POST':
+        form = forms.DegreeCopyForm(request.POST)
+        if form.is_valid():
+            source_degree = form.cleaned_data.get('source_degree')
+            target_degrees = form.cleaned_data.get('target_degrees')
+            if not source_degree or not target_degrees:
+                messages.error(request, 'Source and target degrees are required.')
+                return redirect('university/evaluation')
 
-            if form.is_valid():
-                source_degree = form.cleaned_data['source_degree']
-                target_degrees = form.cleaned_data['target_degrees']
-
-                if source_degree and target_degrees:
-                    for target_degree in target_degrees:
-                        try:
-                            existing_evaluation = models.Evaluation.objects.get(
-                                degree_name=target_degree.degree_name,
-                                degree_level=target_degree.degree_level
-                            )
-                            existing_evaluation.levelA_stu_num = source_degree.levelA_stu_num
-                            existing_evaluation.levelB_stu_num = source_degree.levelB_stu_num
-                            existing_evaluation.levelC_stu_num = source_degree.levelC_stu_num
-                            existing_evaluation.levelF_stu_num = source_degree.levelF_stu_num
-                            existing_evaluation.method = source_degree.method
-                            existing_evaluation.improvement_suggestions = source_degree.improvement_suggestions
-                            existing_evaluation.save()
-                        except models.Evaluation.DoesNotExist:
-                            models.Evaluation.objects.create(
-                                degree_name=target_degree.degree_name,
-                                degree_level=target_degree.degree_level,
-                                method=source_degree.method,
-                                levelA_stu_num=source_degree.levelA_stu_num,
-                                levelB_stu_num=source_degree.levelB_stu_num,
-                                levelC_stu_num=source_degree.levelC_stu_num,
-                                levelF_stu_num=source_degree.levelF_stu_num,
-                                improvement_suggestions=source_degree.improvement_suggestions,
-                            )
-                    messages.success(request, 'Evaluation copied successfully!')
-                else:
-                    messages.error(request, 'Invalid form select.')
-
-            context = {
-                'form': forms.DegreeCopyForm(),
-                'messages': list(messages.get_messages(request)),  # Retrieve message list
-            }
-
-            return render(request, 'university/evaluation/copy_evaluations.html', context)
+            successes = 0
+            for target_degree in target_degrees:
+                defaults = {
+                    'levelA_stu_num': source_degree.levelA_stu_num,
+                    'levelB_stu_num': source_degree.levelB_stu_num,
+                    'levelC_stu_num': source_degree.levelC_stu_num,
+                    'levelF_stu_num': source_degree.levelF_stu_num,
+                    'method': source_degree.method,
+                    'improvement_suggestions': source_degree.improvement_suggestions,
+                }
+                obj, created = models.Evaluation.objects.update_or_create(
+                    degree_name=target_degree.degree_name,
+                    degree_level=target_degree.degree_level,
+                    defaults=defaults
+                )
+                successes += 1
+            messages.success(request, f'{successes} evaluations copied successfully!')
+            return render(request, 'university/evaluation/copy_evaluations.html', {'form': form})
         else:
+            messages.error(request, 'Please correct the errors in the form.')
+    else:
+        form = forms.DegreeCopyForm()
 
-            return render(
-                request,
-                'university/evaluation/copy_evaluations.html',
-                {'form': forms.DegreeCopyForm()}
-            )
+    return render(request, 'university/evaluation/copy_evaluations.html', {'form': form})
