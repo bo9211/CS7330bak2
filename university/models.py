@@ -1,16 +1,19 @@
 from django.db import models
 from django.core.validators import MaxValueValidator, MinValueValidator
 
+
 class Degree(models.Model):
     name = models.CharField(max_length=255)
     level = models.CharField(max_length=50)
-    
+
     class Meta:
         unique_together = ('name', 'level')
+
 
 class Course(models.Model):
     course_id = models.CharField(max_length=8, primary_key=True)
     name = models.CharField(max_length=255, unique=True)
+
 
 class DegreeCourse(models.Model):
     degree = models.ForeignKey(Degree, on_delete=models.CASCADE)
@@ -20,7 +23,7 @@ class DegreeCourse(models.Model):
     degree_level = models.CharField(max_length=50, default='Default Level')
 
     def save(self, *args, **kwargs):
-        if not self.pk:  
+        if not self.pk:
             self.degree_name = self.degree.name
             self.degree_level = self.degree.level
         super().save(*args, **kwargs)
@@ -33,6 +36,7 @@ class Instructor(models.Model):
     id = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=255)
 
+
 class Section(models.Model):
     SEMESTER_CHOICES = [
         ('Spring', 'Spring'),
@@ -40,24 +44,22 @@ class Section(models.Model):
         ('Fall', 'Fall'),
     ]
 
-<<<<<<< HEAD
     course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='sections')
     instructor = models.ForeignKey('Instructor', on_delete=models.CASCADE, related_name='sections')
     section_id = models.CharField(max_length=3)
-=======
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='sections')
     section_id = models.CharField(max_length=3, validators=[
         MaxValueValidator(999), MinValueValidator(100)
     ])
->>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
     semester = models.CharField(max_length=6, choices=SEMESTER_CHOICES)
     year = models.IntegerField()
-    enrolled_stu_num = models.IntegerField(validators=[MinValueValidator(0)])  
+    enrolled_stu_num = models.IntegerField(validators=[MinValueValidator(0)])
 
     class Meta:
         unique_together = ('course', 'section_id', 'semester', 'year')
+
 
 class Objective(models.Model):
     objective_code = models.CharField(max_length=10)
@@ -67,7 +69,8 @@ class Objective(models.Model):
 
     class Meta:
         unique_together = (('course', 'objective_code'),)
-        
+
+
 class Evaluation(models.Model):
     method = models.CharField(max_length=255)
     levelA_stu_num = models.IntegerField(null=True, blank=True)
@@ -75,19 +78,19 @@ class Evaluation(models.Model):
     levelC_stu_num = models.IntegerField(null=True, blank=True)
     levelF_stu_num = models.IntegerField(null=True, blank=True)
     improvement_suggestions = models.TextField(blank=True, null=True)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)  
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     degree = models.ForeignKey(Degree, on_delete=models.CASCADE)
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
-    objective= models.ForeignKey(Objective, on_delete=models.CASCADE)
+    objective = models.ForeignKey(Objective, on_delete=models.CASCADE)
     degree_name = models.CharField(max_length=255, default='Default Name')
     degree_level = models.CharField(max_length=50, default='Default Level')
-    
 
     # Modify the save method to avoid undefined attribute reference
     def save(self, *args, **kwargs):
         # Removed reference to 'degree', as it's not defined in this context
         super().save(*args, **kwargs)
+
 
 class EvaluatorObjective(models.Model):
     evaluation = models.ForeignKey(Evaluation, on_delete=models.CASCADE)
@@ -95,4 +98,3 @@ class EvaluatorObjective(models.Model):
 
     class Meta:
         unique_together = ('evaluation', 'objective')
-
