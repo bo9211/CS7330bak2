@@ -1,20 +1,27 @@
 from django.http import HttpResponse, Http404
-from django.shortcuts import render,redirect ,get_object_or_404
-from university import models ,forms
+from django.shortcuts import render, redirect, get_object_or_404
+from university import models, forms
 from django.contrib import messages
-from django.db.models import Case, When, Value,CharField,Q, Count
+from django.db.models import Case, When, Value, CharField, Q, Count
 from django.shortcuts import render
-from django.db.models import Case, When, Value,CharField,Q, Count
+from django.db.models import Case, When, Value, CharField, Q, Count
 from django.shortcuts import render
+<<<<<<< HEAD
 from django.core.exceptions import ValidationError
+=======
+
+
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
-    return render(request, 'university/course/course.html',{'queryset':queryset})
+    return render(request, 'university/course/course.html', {'queryset': queryset})
+
 
 def add_course(request):
     if request.method == "GET":
         return render(request, 'university/course/add_course.html')
+<<<<<<< HEAD
 
     course_id = request.POST.get("course_id")
     name = request.POST.get("name")
@@ -26,32 +33,40 @@ def add_course(request):
     else:
         messages.info(request, "The course already exists and has not been changed.")
 
+=======
+    Course_Id = request.POST.get("course_id")
+    Name = request.POST.get("name")
+    models.Course.objects.create(course_id=Course_Id, name=Name)
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
     return redirect("/course/")
+
 
 def delete_course(request):
     Course_Id = request.GET.get("course_id")
     models.Course.objects.filter(course_id=Course_Id).delete()
     return redirect("/course/")
-    
+
+
 def edit_course(request, Course_Id):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Course.objects.filter(course_id=Course_Id).first()
-        return render(request,'university/course/edit_course.html', {"row_object":row_object})
-    
+        return render(request, 'university/course/edit_course.html', {"row_object": row_object})
+
     Name = request.POST.get("name")
     models.Course.objects.filter(course_id=Course_Id).update(name=Name)
     return redirect("/course/")
 
 
-
 # Degree
 def degree(request):
     queryset = models.Degree.objects.all()
-    return render(request, 'university/degree/degree.html',{'queryset':queryset})
+    return render(request, 'university/degree/degree.html', {'queryset': queryset})
+
 
 def add_degree(request):
     if request.method == "GET":
         return render(request, 'university/degree/add_degree.html')
+<<<<<<< HEAD
 
     Name = request.POST.get("name")
     Level = request.POST.get("level")
@@ -64,6 +79,14 @@ def add_degree(request):
         models.Degree.objects.create(name=Name, level=Level)
         messages.success(request, 'The new degree has been successfully added.')  
         return redirect("/degree/")
+=======
+    # Degree_Id = request.POST.get("degree_id")
+    Name = request.POST.get("name")
+    Level = request.POST.get("level")
+    models.Degree.objects.create(name=Name, level=Level)
+    return redirect("/degree/")
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
+
 
 def delete_degree(request):
     name = request.GET.get('name')
@@ -72,15 +95,15 @@ def delete_degree(request):
         models.Degree.objects.filter(name=name, level=level).delete()
     return redirect('/degree/')
 
+
 def edit_degree(request, Name):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Degree.objects.filter(name=Name).first()
-        return render(request,'university/degree/edit_degree.html', {"row_object":row_object})
-    
+        return render(request, 'university/degree/edit_degree.html', {"row_object": row_object})
+
     Level = request.POST.get("level")
     models.Degree.objects.filter(name=Name).update(level=Level)
     return redirect("/degree/")
-
 
 
 # DegreeCourse
@@ -96,7 +119,7 @@ def add_degreecourse(request):
         is_core = request.POST.get("is_core", "False") == "True"
         course_id = request.POST.get("course_id")
         degree_id = request.POST.get("degree_id")
-        
+
         course = get_object_or_404(models.Course, course_id=course_id)
         degree = get_object_or_404(models.Degree, pk=degree_id)
 
@@ -105,7 +128,7 @@ def add_degreecourse(request):
             course=course,
             degree=degree
         )
-        return redirect("/degreecourse/")  
+        return redirect("/degreecourse/")
     else:
         return render(request, 'university/degreecourse/add_degreecourse.html', {
             'courses': courses,
@@ -116,11 +139,11 @@ def add_degreecourse(request):
 def delete_degreecourse(request):
     course_id = request.GET.get('course_id')
     degree_id = request.GET.get('degree_id')
-    
+
     if course_id and degree_id:
         try:
             degree_course = models.DegreeCourse.objects.get(
-                course__course_id=course_id, 
+                course__course_id=course_id,
                 degree__id=degree_id
             )
             degree_course.delete()
@@ -129,23 +152,24 @@ def delete_degreecourse(request):
             return HttpResponse('DegreeCourse object does not exist.', status=404)
     else:
         return HttpResponse('Missing course_id or degree_id parameter.', status=400)
- 
+
+
 def edit_degreecourse(request, Course_Id):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.DegreeCourse.objects.filter(course_id=Course_Id).first()
-        return render(request,'university/degreecourse/edit_degreecourse.html', {"row_object":row_object})
-    
+        return render(request, 'university/degreecourse/edit_degreecourse.html', {"row_object": row_object})
+
     Is_Core = request.POST.get("is_core")
     Degree_Id = request.POST.get("degree_id")
-    models.DegreeCourse.objects.filter(course_id=Course_Id).update(is_core=Is_Core, degree_id=Degree_Id )
-    return redirect("/degreecourse/")   
-
+    models.DegreeCourse.objects.filter(course_id=Course_Id).update(is_core=Is_Core, degree_id=Degree_Id)
+    return redirect("/degreecourse/")
 
 
 # Instructor
 def instructor(request):
     queryset = models.Instructor.objects.all()
-    return render(request, 'university/instructor/instructor.html',{'queryset':queryset})
+    return render(request, 'university/instructor/instructor.html', {'queryset': queryset})
+
 
 def add_instructor(request):
     if request.method == "GET":
@@ -153,42 +177,48 @@ def add_instructor(request):
 
     Id = request.POST.get("id")
     Name = request.POST.get("name")
-    
+
     # Check whether the same id or name already exists in the database
     if models.Instructor.objects.filter(id=Id).exists() or models.Instructor.objects.filter(name=Name).exists():
         # If so, an error message is returned and the add form is returned
         messages.error(request, 'Duplicate instructor information cannot be added.')
         return render(request, 'university/instructor/add_instructor.html', {'id': Id, 'name': Name})
-    
+
     # If it does not exist, create a new instructor and redirect to the instructor list
     models.Instructor.objects.create(id=Id, name=Name)
     messages.success(request, 'Instructor added successfully!')
     return redirect("/instructor/")
 
 
-
 def delete_instructor(request):
     Id = request.GET.get("id")
     models.Instructor.objects.filter(id=Id).delete()
     return redirect("/instructor/")
-    
+
+
 def edit_instructor(request, Id):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Instructor.objects.filter(id=Id).first()
-        return render(request,'university/instructor/edit_instructor.html', {"row_object":row_object})
-    
+        return render(request, 'university/instructor/edit_instructor.html', {"row_object": row_object})
+
     Name = request.POST.get("name")
     models.Instructor.objects.filter(id=Id).update(name=Name)
     return redirect("/instructor/")
+
 
 # Section
 def section(request):
     queryset = models.Section.objects.select_related('course', 'instructor').all()
     return render(request, 'university/section/section.html', {'queryset': queryset})
 
+
 def add_section(request):
     if request.method == "GET":
         courses = models.Course.objects.all()
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
         instructors = models.Instructor.objects.all()
         return render(request, 'university/section/add_section.html', {
             'courses': courses,
@@ -232,29 +262,30 @@ def delete_section(request):
     Section_Id = request.GET.get("section_id")
     models.Section.objects.filter(section_id=Section_Id).delete()
     return redirect("/section/")
-    
+
+
 def edit_section(request, Section_Id):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Section.objects.filter(section_id=Section_Id).first()
-        return render(request,'university/section/edit_section.html', {"row_object":row_object})
-    
+        return render(request, 'university/section/edit_section.html', {"row_object": row_object})
+
     Degree_Id = request.POST.get("degree_id")
     Instructor_Id = request.POST.get("instructor_id")
     Course_Id = request.POST.get("course_id")
     Semester = request.POST.get("semester")
     Year = request.POST.get("year")
     Enrolled_Stu_Num = request.POST.get("enrolled_stu_num")
-    models.Section.objects.filter(section_id=Section_Id).update(degree_id=Degree_Id,course_id=Course_Id, 
-                                  instructor_id=Instructor_Id, semester=Semester,
-                                  year=Year, enrolled_stu_num=Enrolled_Stu_Num)
+    models.Section.objects.filter(section_id=Section_Id).update(degree_id=Degree_Id, course_id=Course_Id,
+                                                                instructor_id=Instructor_Id, semester=Semester,
+                                                                year=Year, enrolled_stu_num=Enrolled_Stu_Num)
     return redirect("/section/")
-
 
 
 # Objective
 def objective(request):
     queryset = models.Objective.objects.select_related('course').all()
-    return render(request, 'university/objective/objective.html',{'queryset':queryset})
+    return render(request, 'university/objective/objective.html', {'queryset': queryset})
+
 
 
 def add_objective(request):
@@ -264,13 +295,20 @@ def add_objective(request):
             'courses': courses
         })
     else:
+<<<<<<< HEAD
         objective_code = request.POST.get("objective_code").strip()
         title = request.POST.get("title").strip()
         description = request.POST.get("description").strip()
+=======
+        objective_code = request.POST.get("objective_code")
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
         course_id = request.POST.get("course_id")
-        
+
         course = models.Course.objects.get(course_id=course_id)
 
+<<<<<<< HEAD
         # Check if this objective_code already exists
         existing_objective = models.Objective.objects.filter(objective_code=objective_code).first()
 
@@ -306,28 +344,48 @@ def add_objective(request):
             new_objective.save()
             messages.success(request, 'New objective added successfully.')
             return redirect("/objective/")
+=======
+        new_objective = models.Objective(
+            objective_code=objective_code,
+            title=title,
+            description=description,
+            course=course
+        )
+        new_objective.save()
+
+        return redirect("/objective/")
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
+
 
 def delete_objective(request):
     Objective_Code = request.GET.get("objective_code")
     models.Objective.objects.filter(objective_code=Objective_Code).delete()
     return redirect("/objective/")
-    
+
+
 def edit_objective(request, Objective_Code):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Objective.objects.filter(objective_code=Objective_Code).first()
-        return render(request,'university/objective/edit_objective.html', {"row_object":row_object})
-    
+        return render(request, 'university/objective/edit_objective.html', {"row_object": row_object})
+
     Title = request.POST.get("title")
     Description = request.POST.get("description")
     Course_id = request.POST.get("course_id")
-    models.Objective.objects.filter(objective_code=Objective_Code).update(title= Title, description=Description,course_id=Course_id)
+    models.Objective.objects.filter(objective_code=Objective_Code).update(title=Title, description=Description,
+                                                                          course_id=Course_id)
     return redirect("/objective/")
 
 
 # Evaluation
 def evaluation(request):
+<<<<<<< HEAD
     queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
     return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
+=======
+    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section').all()
+    return render(request, 'university/evaluation/evaluation.html', {'queryset': queryset})
+
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
 
 def add_evaluation(request):
     if request.method == "GET":
@@ -340,6 +398,11 @@ def add_evaluation(request):
         }
         return render(request, 'university/evaluation/add_evaluation.html', context)
     else:
+<<<<<<< HEAD
+=======
+
+        evaluate_id = request.POST.get("evaluate_id")
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
         method = request.POST.get("method")
         levelA_stu_num = request.POST.get("levelA_stu_num", None) or None
         levelB_stu_num = request.POST.get("levelB_stu_num", None) or None
@@ -352,6 +415,7 @@ def add_evaluation(request):
         instructor_id = request.POST.get("instructor_id")
         objective_code = request.POST.get("objective_code")
 
+<<<<<<< HEAD
         course = get_object_or_404(models.Course, course_id=course_id)
         degree = get_object_or_404(models.Degree, id=degree_id)
         section = get_object_or_404(models.Section, id=section_id)
@@ -361,6 +425,11 @@ def add_evaluation(request):
         if not objective:
             messages.error(request, "No Objective found with the provided code.")
             return redirect('/evaluation/add_evaluation/')
+=======
+        course = models.Course.objects.filter(course_id=course_id).first()
+        degree = models.Degree.objects.filter(id=degree_id).first()
+        section = models.Section.objects.filter(id=section_id).first()
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
 
         new_evaluation = models.Evaluation(
             method=method,
@@ -376,19 +445,26 @@ def add_evaluation(request):
             objective=objective
         )
         new_evaluation.save()
+<<<<<<< HEAD
         messages.success(request, "Evaluation added successfully.")
         return redirect("/evaluation/")
+=======
+
+        return redirect("/evaluation/")
+
+>>>>>>> 5005e5ce5f80aa66e0e087ef4d678a3489d9aad3
 
 def delete_evaluation(request):
     Evaluate_Id = request.GET.get("evaluate_id")
     models.Evaluation.objects.filter(evaluate_id=Evaluate_Id).delete()
     return redirect("/evaluation/")
-    
+
+
 def edit_evaluation(request, Evaluate_Id):
-    if request.method =='GET':
+    if request.method == 'GET':
         row_object = models.Evaluation.objects.filter(evaluate_id=Evaluate_Id).first()
-        return render(request,'university/evaluation/edit_evaluation.html', {"row_object":row_object})
-    
+        return render(request, 'university/evaluation/edit_evaluation.html', {"row_object": row_object})
+
     Method = request.POST.get("method")
     LevelA_Stu_Num = request.POST.get("levelA_stu_num")
     LevelB_Stu_Num = request.POST.get("levelB_stu_num")
@@ -398,14 +474,17 @@ def edit_evaluation(request, Evaluate_Id):
     Degree_Id = request.POST.get("degree_id")
     Section_Id = request.POST.get("section_id")
     Course_Id = request.POST.get("course_id")
-    models.Evaluation.objects.filter(evaluate_id=Evaluate_Id).update(method=Method, 
-                                 levelA_stu_num=LevelA_Stu_Num, levelB_stu_num=LevelB_Stu_Num,
-                                 levelC_stu_num=LevelC_Stu_Num,levelF_stu_num=LevelF_Stu_Num,
-                                 improvement_suggestions=Improvement_Suggestions,degree_id=Degree_Id, section_id=Section_Id,course_id=Course_Id)
+    models.Evaluation.objects.filter(evaluate_id=Evaluate_Id).update(method=Method,
+                                                                     levelA_stu_num=LevelA_Stu_Num,
+                                                                     levelB_stu_num=LevelB_Stu_Num,
+                                                                     levelC_stu_num=LevelC_Stu_Num,
+                                                                     levelF_stu_num=LevelF_Stu_Num,
+                                                                     improvement_suggestions=Improvement_Suggestions,
+                                                                     degree_id=Degree_Id, section_id=Section_Id,
+                                                                     course_id=Course_Id)
     return redirect("/evaluation/")
 
 
- 
 def evaluationquery(request):
     semester_param = request.GET.get('semester', None)
     context = {'initial_load': True}
@@ -415,7 +494,7 @@ def evaluationquery(request):
         semester = semester_param[4:]
         if year.isdigit() and semester.isalpha():
             evaluations = models.Evaluation.objects.filter(
-                section__semester=semester, 
+                section__semester=semester,
                 section__year=int(year)
             )
 
@@ -426,11 +505,14 @@ def evaluationquery(request):
                     'course__course_id', 'section__section_id', 'section__semester', 'section__year'
                 ).annotate(
                     count=Count('evaluate_id'),
-                    filled_suggestions_count=Count('improvement_suggestions', filter=Q(improvement_suggestions__isnull=False)),
-                    filled_evaluation_count=Count('evaluate_id', filter=Q(levelA_stu_num__isnull=False, levelB_stu_num__isnull=False, levelC_stu_num__isnull=False, levelF_stu_num__isnull=False)),
+                    filled_suggestions_count=Count('improvement_suggestions',
+                                                   filter=Q(improvement_suggestions__isnull=False) & ~Q(
+                                                       improvement_suggestions='')),
+                    filled_evaluation_count=Count('evaluate_id',
+                                                  filter=Q(levelA_stu_num__isnull=False, levelB_stu_num__isnull=False,
+                                                           levelC_stu_num__isnull=False, levelF_stu_num__isnull=False)),
                 ).distinct()
 
-               
                 for course in unique_courses:
                     course['suggestions_status'] = calculate_status(course['filled_suggestions_count'], course['count'])
                     course['evaluated_status'] = calculate_status(course['filled_evaluation_count'], course['count'])
@@ -469,7 +551,7 @@ def calculate_status(filled_count, total_count):
 #         )
 #         if not queryset:
 #             return render(request, 'university/evaluation/passratequery.html', {'message': 'No evaluations found for the provided semester.'})
-        
+
 #         total_passed = total_students = 0
 #         for eval in queryset:
 #             # Check if all fields are filled
@@ -510,7 +592,7 @@ def calculate_status(filled_count, total_count):
 #         return render(request, 'university/evaluation/passratequery.html', {'initial_load': True})
 #     if semester_param == '' or percentage_param == '':
 #         return render(request, 'university/evaluation/passratequery.html', {'error': 'Both semester and percentage are required.'})
-    
+
 #     return handle_pass_rate_query(request, semester_param, percentage_param)
 
 # 及格率查询辅助函数
@@ -530,8 +612,9 @@ def handle_pass_rate_query(request, semester_param, percentage_param):
 
         course_pass_rates = []
         if not queryset:
-            return render(request, 'university/evaluation/passratequery.html', {'message': 'No evaluations found for the provided semester.'})
-        
+            return render(request, 'university/evaluation/passratequery.html',
+                          {'message': 'No evaluations found for the provided semester.'})
+
         for eval in queryset:
             levelA = eval.levelA_stu_num or 0
             levelB = eval.levelB_stu_num or 0
@@ -557,10 +640,13 @@ def handle_pass_rate_query(request, semester_param, percentage_param):
                 'course_pass_rates': course_pass_rates
             })
         else:
-            return render(request, 'university/evaluation/passratequery.html', {'message': 'No sections meet the threshold.'})
+            return render(request, 'university/evaluation/passratequery.html',
+                          {'message': 'No sections meet the threshold.'})
 
     except ValueError:
-        return render(request, 'university/evaluation/passratequery.html', {'error': 'Invalid semester format or percentage value.'})
+        return render(request, 'university/evaluation/passratequery.html',
+                      {'error': 'Invalid semester format or percentage value.'})
+
 
 # 及格率查询视图
 def passratequery(request):
@@ -569,10 +655,10 @@ def passratequery(request):
     if semester_param is None or percentage_param is None:
         return render(request, 'university/evaluation/passratequery.html', {'initial_load': True})
     if semester_param == '' or percentage_param == '':
-        return render(request, 'university/evaluation/passratequery.html', {'error': 'Both semester and percentage are required.'})
-    
-    return handle_pass_rate_query(request, semester_param, percentage_param)
+        return render(request, 'university/evaluation/passratequery.html',
+                      {'error': 'Both semester and percentage are required.'})
 
+    return handle_pass_rate_query(request, semester_param, percentage_param)
 
 
 def query_course(request):
@@ -635,7 +721,6 @@ def degree_details(request):
             # 使用获取到的 course_ids 查询 Section 表
             sections = models.Section.objects.filter(course_id__in=course_ids).order_by('-year', 'semester')
 
-
             objectives = models.Objective.objects.filter(
                 course__degreecourse__degree_id=degree
             )
@@ -653,9 +738,6 @@ def degree_details(request):
             })
 
     return render(request, 'university/degree/degree_result.html', context)
-
-
-
 
 
 def evaluation_detail(request, id):
@@ -710,9 +792,9 @@ def evaluation_detail(request, id):
         return render(
             request,
             'university/evaluation/enter_evaluations.html',
-            {'sections': sections, 'form': form  , 'evaluation': evaluation, 'total_evaluations': len(evaluations),
-            'evaluations_info': evaluations_info,
-            'incomplete_evaluations': incomplete_evaluations,}
+            {'sections': sections, 'form': form, 'evaluation': evaluation, 'total_evaluations': len(evaluations),
+             'evaluations_info': evaluations_info,
+             'incomplete_evaluations': incomplete_evaluations, }
         )
 
     return render(
@@ -727,37 +809,32 @@ def evaluation_detail(request, id):
         }
     )
 
+
 def copy_evaluation(request):
     if request.method == 'POST':
         form = forms.DegreeCopyForm(request.POST)
         if form.is_valid():
-            source_degree = form.cleaned_data.get('source_degree')
-            target_degrees = form.cleaned_data.get('target_degrees')
-            if not source_degree or not target_degrees:
-                messages.error(request, 'Source and target degrees are required.')
-                return redirect('university/evaluation')
-
-            successes = 0
-            for target_degree in target_degrees:
+            source_degree_id = form.cleaned_data.get('source_degree')
+            target_degree_ids = form.cleaned_data.get('target_degrees')
+            source_evaluation = models.Evaluation.objects.get(degree_id=source_degree_id)
+            for target_degree_id in target_degree_ids:
                 defaults = {
-                    'levelA_stu_num': source_degree.levelA_stu_num,
-                    'levelB_stu_num': source_degree.levelB_stu_num,
-                    'levelC_stu_num': source_degree.levelC_stu_num,
-                    'levelF_stu_num': source_degree.levelF_stu_num,
-                    'method': source_degree.method,
-                    'improvement_suggestions': source_degree.improvement_suggestions,
+                    'levelA_stu_num': source_evaluation.levelA_stu_num,
+                    'levelB_stu_num': source_evaluation.levelB_stu_num,
+                    'levelC_stu_num': source_evaluation.levelC_stu_num,
+                    'levelF_stu_num': source_evaluation.levelF_stu_num,
+                    'method': source_evaluation.method,
+                    'improvement_suggestions': source_evaluation.improvement_suggestions,
                 }
                 obj, created = models.Evaluation.objects.update_or_create(
-                    degree_name=target_degree.degree_name,
-                    degree_level=target_degree.degree_level,
+                    degree_id=target_degree_id,  # Update or create evaluation for target degree
                     defaults=defaults
                 )
-                successes += 1
-            messages.success(request, f'{successes} evaluations copied successfully!')
+
+            messages.success(request, f'evaluations copied successfully!')
             return render(request, 'university/evaluation/copy_evaluations.html', {'form': form})
-        else:
-            messages.error(request, 'Please correct the errors in the form.')
+
     else:
-        form = forms.DegreeCopyForm()
+        form = forms.DegreeCopyForm()  # Initialize an empty form
 
     return render(request, 'university/evaluation/copy_evaluations.html', {'form': form})
