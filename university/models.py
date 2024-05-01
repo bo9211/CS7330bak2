@@ -40,7 +40,7 @@ class Section(models.Model):
         ('Fall', 'Fall'),
     ]
 
-    degree = models.ForeignKey(Degree, on_delete=models.CASCADE, related_name='sections')
+
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='sections')
     section_id = models.CharField(max_length=3, validators=[
@@ -51,7 +51,7 @@ class Section(models.Model):
     enrolled_stu_num = models.IntegerField()
 
     class Meta:
-        unique_together = ('course', 'section_id', 'semester', 'year', 'degree')
+        unique_together = ('course', 'section_id', 'semester', 'year')
 
 class Objective(models.Model):
     objective_code = models.CharField(max_length=10, primary_key=True)
