@@ -17,12 +17,12 @@
           <div class="panel-body">
               <form class="form-horizontal" method="post">
                 {% csrf_token %}
-                  <div class="form-group mb-4">
+                  {% comment %} <div class="form-group mb-4">
                     <label class="col-sm-2 control-label">Evaluate_Id</label>
                     <div class="col-sm-4">
                       <input type="text" class="form-control" placeholder="Evaluate_Id" name="evaluate_id">
                     </div>
-                  </div>
+                  </div> {% endcomment %}
                   <div class="form-group mb-4">
                     <label class="col-sm-2 control-label">Method</label>
                     <div class="col-sm-5">
@@ -54,6 +54,16 @@
                     </div>
                   </div>
                   <div class="form-group mb-4">
+                    <label class="col-sm-2 control-label">Objective</label>
+                    <div class="col-sm-4">
+                        <select class="form-control" name="objective_code">
+                            {% for objective in objectives %}
+                            <option value="{{ objective.objective_code }}">{{ objective.objective_code }}</option>  
+                            {% endfor %}
+                        </select>
+                    </div>
+                  </div>
+                  <div class="form-group mb-4">
                     <label class="col-sm-2 control-label">Course:</label>
                     <div class="col-sm-5">
                       <select class="form-control" name="course_id">
@@ -68,7 +78,7 @@
                     <div class="col-sm-4">
                         <select class="form-control" name="section_id">
                             {% for section in sections %}
-                            <option value="{{ section.id }}">{{ section.section_id }}</option>  <!-- 显示 section_id 而不只是 id -->
+                            <option value="{{ section.id }}">{{ section.section_id }}</option>  
                             {% endfor %}
                         </select>
                     </div>
@@ -79,6 +89,16 @@
                       <select class="form-control" name="degree_id">
                         {% for degree in degrees %}
                         <option value="{{ degree.id }}">{{ degree.name }} - {{ degree.level }}</option>
+                        {% endfor %}
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group mb-4">
+                    <label class="col-sm-2 control-label">Instructor:</label>
+                    <div class="col-sm-5">
+                      <select class="form-control" name="instructor_id">
+                        {% for instructor in instructors %}
+                        <option value="{{ instructor.id }}">{{ instructor.name }}</option>
                         {% endfor %}
                       </select>
                     </div>

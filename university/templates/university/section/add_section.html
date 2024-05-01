@@ -10,6 +10,13 @@
 </nav>
 <div class="mt-5 pt-5">
   <div class="container">
+    {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li class="{{ message.tags }}">{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
       <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Add New Section</h3>
@@ -28,9 +35,9 @@
                     <div class="col-sm-4">
                       <select class="form-control" name="semester">
                         <option value="" selected disabled>Semester</option>
-                        <option value="spring">Spring</option>
-                        <option value="summer">Summer</option>
-                        <option value="fall">Fall</option>
+                        <option value="Spring">Spring</option>
+                        <option value="Summer">Summer</option>
+                        <option value="Fall">Fall</option>
                       </select>
                     </div>
                   </div> 

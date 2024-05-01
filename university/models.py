@@ -40,27 +40,26 @@ class Section(models.Model):
         ('Fall', 'Fall'),
     ]
 
-    degree = models.ForeignKey(Degree, on_delete=models.CASCADE, related_name='sections')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='sections')
-    section_id = models.CharField(max_length=3, validators=[
-        MaxValueValidator(999), MinValueValidator(100)
-    ])
+    course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='sections')
+    instructor = models.ForeignKey('Instructor', on_delete=models.CASCADE, related_name='sections')
+    section_id = models.CharField(max_length=3)
     semester = models.CharField(max_length=6, choices=SEMESTER_CHOICES)
     year = models.IntegerField()
-    enrolled_stu_num = models.IntegerField()
+    enrolled_stu_num = models.IntegerField(validators=[MinValueValidator(0)])  
 
     class Meta:
-        unique_together = ('course', 'section_id', 'semester', 'year', 'degree')
+        unique_together = ('course', 'section_id', 'semester', 'year')
 
 class Objective(models.Model):
-    objective_code = models.CharField(max_length=10, primary_key=True)
-    title = models.CharField(max_length=120, unique=True)
+    objective_code = models.CharField(max_length=10)
+    title = models.CharField(max_length=120)
     description = models.TextField(blank=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
 
+    class Meta:
+        unique_together = (('course', 'objective_code'),)
+        
 class Evaluation(models.Model):
-    evaluate_id = models.AutoField(primary_key=True)
     method = models.CharField(max_length=255)
     levelA_stu_num = models.IntegerField(null=True, blank=True)
     levelB_stu_num = models.IntegerField(null=True, blank=True)
@@ -70,8 +69,11 @@ class Evaluation(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)  
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
     degree = models.ForeignKey(Degree, on_delete=models.CASCADE)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
+    objective= models.ForeignKey(Objective, on_delete=models.CASCADE)
     degree_name = models.CharField(max_length=255, default='Default Name')
     degree_level = models.CharField(max_length=50, default='Default Level')
+    
 
     # Modify the save method to avoid undefined attribute reference
     def save(self, *args, **kwargs):

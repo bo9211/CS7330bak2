@@ -40,7 +40,6 @@
                         <table class="table table-striped table-bordered mx-auto">
                             <thead>
                             <tr>
-                                <th scope="col">Evaluate_Id</th>
                                 <th scope="col">Method</th>
                                 <th scope="col">LevelA_Stu_Num</th>
                                 <th scope="col">LevelB_Stu_Num</th>
@@ -51,17 +50,19 @@
                                 <th scope="col">Section_Id</th>
                                 <th scope="col">Degree_name</th>
                                 <th scope="col">Degree_Level</th>
-                                <th scope="col">Operations</th>
+                                <th scope="col">Instructor ID</th>
+                                <th scope="col">Objective Code</th>
+                                {% comment %} <th scope="col">Operations</th> {% endcomment %}
                             </tr>
                             </thead>
                             <tbody>
                             {% for obj in queryset %}
                                 <tr>
-                                    <td>
+                                    {% comment %} <td>
                                         <a href="{% url 'university:enter_evaluations' obj.evaluate_id %}">
                                             {{ obj.evaluate_id }}
                                         </a>
-                                    </td>
+                                    </td> {% endcomment %}
                                     <td>{{ obj.method }}</td>
                                     <td>{{ obj.levelA_stu_num }}</td>
                                     <td>{{ obj.levelB_stu_num }}</td>
@@ -72,12 +73,14 @@
                                     <td>{{ obj.section.section_id }}</td>
                                     <td>{{ obj.degree.name }}</td>
                                     <td>{{ obj.degree.level }}</td>
-                                    <td>
+                                    <td>{{ obj.instructor.id }}</td>
+                                    <th>{{ obj.objective.objective_code}}</th>
+                                    {% comment %} <td>
                                         <a class="btn btn-warning"
                                            href="/evaluation/{{ obj.evaluate_id }}/edit_evaluation/">Edit</a>
                                         <a class="btn btn-danger"
                                            href="/evaluation/delete_evaluation/?evaluate_id={{ obj.evaluate_id }}">Delete</a>
-                                    </td>
+                                    </td> {% endcomment %}
                                 </tr>
                             {% endfor %}
                             </tbody>
