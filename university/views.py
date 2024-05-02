@@ -7,8 +7,7 @@ from django.shortcuts import render
 from django.db.models import Case, When, Value, CharField, Q, Count
 from django.shortcuts import render
 from django.core.exceptions import ValidationError
-
-
+from django.db import transaction
 
 # Course
 def course(request):
@@ -60,14 +59,14 @@ def add_degree(request):
 
     Name = request.POST.get("name")
     Level = request.POST.get("level")
-    
+
     try:
         degree = models.Degree.objects.get(name=Name, level=Level)
-        messages.error(request, 'This degree already exists.')  
+        messages.error(request, 'This degree already exists.')
         return redirect("/degree/")
     except models.Degree.DoesNotExist:
         models.Degree.objects.create(name=Name, level=Level)
-        messages.success(request, 'The new degree has been successfully added.')  
+        messages.success(request, 'The new degree has been successfully added.')
         return redirect("/degree/")
 
     # Degree_Id = request.POST.get("degree_id")
@@ -205,7 +204,6 @@ def add_section(request):
     if request.method == "GET":
         courses = models.Course.objects.all()
 
-
         instructors = models.Instructor.objects.all()
         return render(request, 'university/section/add_section.html', {
             'courses': courses,
@@ -274,7 +272,6 @@ def objective(request):
     return render(request, 'university/objective/objective.html', {'queryset': queryset})
 
 
-
 def add_objective(request):
     if request.method == "GET":
         courses = models.Course.objects.all()
@@ -291,7 +288,6 @@ def add_objective(request):
         title = request.POST.get("title")
         description = request.POST.get("description")
 
-
         objective_code = request.POST.get("objective_code")
         title = request.POST.get("title")
         description = request.POST.get("description")
@@ -299,7 +295,6 @@ def add_objective(request):
         course_id = request.POST.get("course_id")
 
         course = models.Course.objects.get(course_id=course_id)
-
 
         # Check if this objective_code already exists
         existing_objective = models.Objective.objects.filter(objective_code=objective_code).first()
@@ -359,71 +354,78 @@ def edit_objective(request, Objective_Code):
 
 # Evaluation
 def evaluation(request):
-
-    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
-    return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
+    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section', 'instructor', 'objective').all()
+    return render(request, 'university/evaluation/evaluation.html', {'queryset': queryset})
 
 
 def add_evaluation(request):
     if request.method == "GET":
         context = {
-            'courses': models.Course.objects.all(),
+            'courses': models.Section.objects.select_related('course').all(),
             'degrees': models.Degree.objects.all(),
             'sections': models.Section.objects.all(),
-            'instructors': models.Instructor.objects.all(),
+            'instructors': models.Section.objects.select_related('instructor').all(),
             'objectives': models.Objective.objects.all()
         }
         return render(request, 'university/evaluation/add_evaluation.html', context)
-    else:
-
+    elif request.method == "POST":
         method = request.POST.get("method")
-        levelA_stu_num = request.POST.get("levelA_stu_num", None) or None
-        levelB_stu_num = request.POST.get("levelB_stu_num", None) or None
-        levelC_stu_num = request.POST.get("levelC_stu_num", None) or None
-        levelF_stu_num = request.POST.get("levelF_stu_num", None) or None
+        try:
+            levelA_stu_num = int(request.POST.get("levelA_stu_num", 0)) if request.POST.get("levelA_stu_num") else None
+            levelB_stu_num = int(request.POST.get("levelB_stu_num", 0)) if request.POST.get("levelB_stu_num") else None
+            levelC_stu_num = int(request.POST.get("levelC_stu_num", 0)) if request.POST.get("levelC_stu_num") else None
+            levelF_stu_num = int(request.POST.get("levelF_stu_num", 0)) if request.POST.get("levelF_stu_num") else None
+        except ValueError:
+            return HttpResponse("<h1>Invalid input</h1><p>Please ensure all numeric fields contain only numbers.</p>",
+                                status=400)
+
         improvement_suggestions = request.POST.get("improvement_suggestions", "")
-        course_id = request.POST.get("course_id")
         section_id = request.POST.get("section_id")
         degree_id = request.POST.get("degree_id")
-        instructor_id = request.POST.get("instructor_id")
         objective_code = request.POST.get("objective_code")
 
+        with transaction.atomic():  # Using a transaction to ensure data integrity
+            # Fetch the section which already includes course and instructor
+            section = get_object_or_404(models.Section, id=section_id)
+            degree = get_object_or_404(models.Degree, id=degree_id)
+            objective = models.Objective.objects.filter(objective_code=objective_code).first()
 
-        course = get_object_or_404(models.Course, course_id=course_id)
-        degree = get_object_or_404(models.Degree, id=degree_id)
-        section = get_object_or_404(models.Section, id=section_id)
-        instructor = get_object_or_404(models.Instructor, id=instructor_id)
-        objective = models.Objective.objects.filter(objective_code=objective_code).first()
-        
-        if not objective:
-            messages.error(request, "No Objective found with the provided code.")
-            return redirect('/evaluation/add_evaluation/')
+            if not objective:
+                messages.error(request, "No Objective found with the provided code.")
+                return redirect('/evaluation/add_evaluation/')
 
-        course = models.Course.objects.filter(course_id=course_id).first()
-        degree = models.Degree.objects.filter(id=degree_id).first()
-        section = models.Section.objects.filter(id=section_id).first()
+            # Check if an evaluation already exists to prevent duplicate
+            existing_evaluation = models.Evaluation.objects.filter(
+                course=section.course,
+                degree=degree,
+                section=section,
+                instructor=section.instructor,
+                objective=objective,
+                method=method
+            ).exists()
 
+            if existing_evaluation:
+                messages.error(request, "An evaluation with the same details already exists.")
+                return redirect('/evaluation/add_evaluation/')
 
-        new_evaluation = models.Evaluation(
-            method=method,
-            levelA_stu_num=levelA_stu_num,
-            levelB_stu_num=levelB_stu_num,
-            levelC_stu_num=levelC_stu_num,
-            levelF_stu_num=levelF_stu_num,
-            improvement_suggestions=improvement_suggestions,
-            course=course,
-            degree=degree,
-            section=section,
-            instructor=instructor,
-            objective=objective
-        )
-        new_evaluation.save()
+            # Create the new evaluation instance
+            new_evaluation = models.Evaluation(
+                method=method,
+                levelA_stu_num=levelA_stu_num,
+                levelB_stu_num=levelB_stu_num,
+                levelC_stu_num=levelC_stu_num,
+                levelF_stu_num=levelF_stu_num,
+                improvement_suggestions=improvement_suggestions,
+                course=section.course,
+                degree=degree,
+                section=section,
+                instructor=section.instructor,
+                objective=objective
+            )
+            new_evaluation.save()
 
-
-        messages.success(request, "Evaluation added successfully.")
-
-
-        return redirect("/evaluation/")
+            messages.success(request, "Evaluation added successfully.")
+            return redirect("/evaluation/")
 
 
 def delete_evaluation(request):
@@ -476,11 +478,11 @@ def evaluationquery(request):
                 unique_courses = evaluations.values(
                     'course__course_id', 'section__section_id', 'section__semester', 'section__year'
                 ).annotate(
-                    count=Count('evaluate_id'),
+                    count=Count('id'),
                     filled_suggestions_count=Count('improvement_suggestions',
                                                    filter=Q(improvement_suggestions__isnull=False) & ~Q(
                                                        improvement_suggestions='')),
-                    filled_evaluation_count=Count('evaluate_id',
+                    filled_evaluation_count=Count('id',
                                                   filter=Q(levelA_stu_num__isnull=False, levelB_stu_num__isnull=False,
                                                            levelC_stu_num__isnull=False, levelF_stu_num__isnull=False)),
                 ).distinct()
@@ -580,7 +582,7 @@ def handle_pass_rate_query(request, semester_param, percentage_param):
             levelB_stu_num__isnull=True,
             levelC_stu_num__isnull=True,
             levelF_stu_num__isnull=True
-        )  
+        )
 
         course_pass_rates = []
         if not queryset:
@@ -713,24 +715,23 @@ def degree_details(request):
 
 
 def evaluation_detail(request):
-
     form = forms.EvaluationQueryForm(request.POST or None)
 
     evaluations = models.Evaluation.objects.all()
 
     evaluations_info = [
-        {   'id':eval.id or 'Not Entered',
-            'method': eval.method or 'Not Entered',
-            'levelA_stu_num': eval.levelA_stu_num or 'Not Entered',
-            'levelB_stu_num': eval.levelB_stu_num or 'Not Entered',
-            'levelC_stu_num': eval.levelC_stu_num or 'Not Entered',
-            'levelF_stu_num': eval.levelF_stu_num or 'Not Entered',
-            'improvement_suggestions': eval.improvement_suggestions or 'Not Entered',
-            'course': eval.course or 'Not Entered',
-            'section': eval.section or 'Not Entered',
-            'degree_name': eval.degree_name or 'Not Entered',
-            'degree_level': eval.degree_level or 'Not Entered',
-        }
+        {'id': eval.id or 'Not Entered',
+         'method': eval.method or 'Not Entered',
+         'levelA_stu_num': eval.levelA_stu_num or 'Not Entered',
+         'levelB_stu_num': eval.levelB_stu_num or 'Not Entered',
+         'levelC_stu_num': eval.levelC_stu_num or 'Not Entered',
+         'levelF_stu_num': eval.levelF_stu_num or 'Not Entered',
+         'improvement_suggestions': eval.improvement_suggestions or 'Not Entered',
+         'course': eval.course or 'Not Entered',
+         'section': eval.section or 'Not Entered',
+         'degree_name': eval.degree_name or 'Not Entered',
+         'degree_level': eval.degree_level or 'Not Entered',
+         }
         for eval in evaluations
     ]
 
@@ -743,7 +744,6 @@ def evaluation_detail(request):
         ]
         if missing_fields:
             incomplete_evaluations[info['id']] = missing_fields
-
 
     if request.method == 'POST' and form.is_valid():
         degree = form.cleaned_data['degree']
