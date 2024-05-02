@@ -364,13 +364,6 @@ def evaluation(request):
     return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
 
 
-    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
-    return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
-
-    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section').all()
-    return render(request, 'university/evaluation/evaluation.html', {'queryset': queryset})
-
-
 def add_evaluation(request):
     if request.method == "GET":
         context = {

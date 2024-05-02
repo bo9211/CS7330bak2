@@ -11,6 +11,13 @@
     </nav>
     <div class="mt-5 pt-5">
         <div class="container">
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
             <div style="margin-bottom: 10px">
                 <a class="btn btn-success" href="add_evaluation/">
                     <i class="bi bi-plus-circle"></i>
@@ -52,6 +59,8 @@
                                 <th scope="col">Degree_Level</th>
                                 <th scope="col">Instructor ID</th>
                                 <th scope="col">Objective Code</th>
+                                <th scope="col">Semester</th>
+                                <th scope="col">Year</th>
                                 {% comment %} <th scope="col">Operations</th> {% endcomment %}
                             </tr>
                             </thead>
@@ -75,6 +84,8 @@
                                     <td>{{ obj.degree.level }}</td>
                                     <td>{{ obj.instructor.id }}</td>
                                     <th>{{ obj.objective.objective_code}}</th>
+                                    <td>{{ obj.section.semester }}</td>
+                                    <td>{{ obj.section.year }}</td>
                                     {% comment %} <td>
                                         <a class="btn btn-warning"
                                            href="/evaluation/{{ obj.evaluate_id }}/edit_evaluation/">Edit</a>

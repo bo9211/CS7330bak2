@@ -78,7 +78,7 @@
                     <div class="col-sm-4">
                         <select class="form-control" name="section_id">
                             {% for section in sections %}
-                            <option value="{{ section.id }}">{{ section.section_id }}</option>  
+                            <option value="{{ section.id }}">{{ section.section_id }} - {{ section.year }} - {{ section.semester }} </option>  
                             {% endfor %}
                         </select>
                     </div>

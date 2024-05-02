@@ -84,10 +84,14 @@ class Evaluation(models.Model):
     objective = models.ForeignKey(Objective, on_delete=models.CASCADE)
     degree_name = models.CharField(max_length=255, default='Default Name')
     degree_level = models.CharField(max_length=50, default='Default Level')
+    semester = models.CharField(max_length=6, blank=True, null=True)
+    year = models.IntegerField(null=True, blank=True)
 
-    # Modify the save method to avoid undefined attribute reference
     def save(self, *args, **kwargs):
-        # Removed reference to 'degree', as it's not defined in this context
+        # Set semester and year from the associated section
+        if not self.semester or not self.year:
+            self.semester = self.section.semester
+            self.year = self.section.year
         super().save(*args, **kwargs)
 
 
