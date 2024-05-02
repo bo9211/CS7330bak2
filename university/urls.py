@@ -56,7 +56,7 @@ urlpatterns = [
     path('instructor_result/', views.instructor_sections, name='instructor_result'),
     path('degree_result/', views.degree_details, name='degree_result'),
 
-    path('evaluation/<int:id>/', views.evaluation_detail, name='enter_evaluations'),
+    path('enter_evaluations/', views.evaluation_detail, name='enter_evaluations'),
     path('copy_evaluations/', views.copy_evaluation, name='copy_evaluations'),
 
 ]

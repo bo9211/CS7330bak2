@@ -719,17 +719,14 @@ def degree_details(request):
     return render(request, 'university/degree/degree_result.html', context)
 
 
-def evaluation_detail(request, id):
-    # Get evaluation object or return 404
-    evaluation = get_object_or_404(models.Evaluation, evaluate_id=id)
+def evaluation_detail(request):
 
-    # Initialize the form with POST data if applicable
     form = forms.EvaluationQueryForm(request.POST or None)
-    # Collect evaluation information
+
     evaluations = models.Evaluation.objects.all()
+
     evaluations_info = [
-        {
-            'evaluate_id': eval.evaluate_id,
+        {   'id':eval.id or 'Not Entered',
             'method': eval.method or 'Not Entered',
             'levelA_stu_num': eval.levelA_stu_num or 'Not Entered',
             'levelB_stu_num': eval.levelB_stu_num or 'Not Entered',
@@ -744,7 +741,6 @@ def evaluation_detail(request, id):
         for eval in evaluations
     ]
 
-    # Identify missing information for each evaluation
     incomplete_evaluations = {}
     for info in evaluations_info:
         missing_fields = [
@@ -753,15 +749,14 @@ def evaluation_detail(request, id):
             if field_value == 'Not Entered'
         ]
         if missing_fields:
-            incomplete_evaluations[info['evaluate_id']] = missing_fields
+            incomplete_evaluations[info['id']] = missing_fields
 
-    # Validate and process the form if POST method and form is valid
+
     if request.method == 'POST' and form.is_valid():
         degree = form.cleaned_data['degree']
         instructor = form.cleaned_data['instructor']
         semester = form.cleaned_data['semester']
         year = form.cleaned_data['year']
-        # Retrieve courses for the given instructor and semester
         sections = models.Section.objects.filter(
             course__degreecourse__degree=degree,
             instructor=instructor,

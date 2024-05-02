@@ -85,7 +85,7 @@
             <table class="table table-striped table-hover">
                 <thead class="thead-dark">
                 <tr>
-                    <th>Evaluation ID</th>
+                    <th>ID</th>
                     <th>Method</th>
                     <th>Level A Student Count</th>
                     <th>Level B Student Count</th>
@@ -97,7 +97,7 @@
                 <tbody>
                 {% for evaluation in evaluations_info %}
                     <tr>
-                        <td>{{ evaluation.evaluate_id }}</td>
+                        <td>{{ evaluation.id }}</td>
                         <td>{{ evaluation.method }}</td>
                         <td>{{ evaluation.levelA_stu_num }}</td>
                         <td>{{ evaluation.levelB_stu_num }}</td>
@@ -120,14 +120,14 @@
             <table class="table table-striped table-hover">
                 <thead class="thead-dark">
                 <tr>
-                    <th>Evaluation ID</th>
+                    <th>ID</th>
                     <th>Incomplete Context</th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for eval_id, missing_fields in incomplete_evaluations.items %}
+                {% for id, missing_fields in incomplete_evaluations.items %}
                     <tr>
-                        <td>{{ eval_id }}</td>
+                        <td>{{ id }}</td>
                         <td>
                             <ul>
                                 {% for field in missing_fields %}
