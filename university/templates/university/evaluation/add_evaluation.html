@@ -68,7 +68,7 @@
                     <div class="col-sm-5">
                       <select class="form-control" name="course_id">
                         {% for section  in courses %}
-                        <option value="{{ section.course.course_id }}">{{ section.course.name }}</option>
+                        <option value="{{ section.course.course_id }}"> {{ section.course.course_id }} - {{ section.course.name }}</option>
                         {% endfor %}
                       </select>
                     </div>
@@ -98,7 +98,7 @@
                     <div class="col-sm-5">
                       <select class="form-control" name="instructor_id">
                         {% for section in instructors %}
-                        <option value="{{ section.instructor.id }}">{{ section.instructor.name }}</option>
+                        <option value="{{ section.instructor.id }}"> {{ section.instructor.id }} - {{ section.instructor.name }}</option>
                         {% endfor %}
                       </select>
                     </div>
