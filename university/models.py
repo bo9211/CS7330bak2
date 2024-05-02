@@ -44,23 +44,14 @@ class Section(models.Model):
         ('Fall', 'Fall'),
     ]
 
-<<<<<<< HEAD
 
-=======
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
     course = models.ForeignKey('Course', on_delete=models.CASCADE, related_name='sections')
     instructor = models.ForeignKey('Instructor', on_delete=models.CASCADE, related_name='sections')
     section_id = models.CharField(max_length=3)
 
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='sections')
     instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, related_name='sections')
-<<<<<<< HEAD
     section_id = models.CharField(max_length=3)
-=======
-    section_id = models.CharField(max_length=3, validators=[
-        MaxValueValidator(999), MinValueValidator(100)
-    ])
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
     semester = models.CharField(max_length=6, choices=SEMESTER_CHOICES)
     year = models.IntegerField()
     enrolled_stu_num = models.IntegerField(validators=[MinValueValidator(0)])

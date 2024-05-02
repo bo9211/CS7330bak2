@@ -6,17 +6,10 @@ from django.db.models import Case, When, Value, CharField, Q, Count
 from django.shortcuts import render
 from django.db.models import Case, When, Value, CharField, Q, Count
 from django.shortcuts import render
-<<<<<<< HEAD
-from django.core.exceptions import ValidationError
-
-
-=======
-
 from django.core.exceptions import ValidationError
 
 
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 # Course
 def course(request):
     queryset = models.Course.objects.all().order_by('course_id')
@@ -26,10 +19,6 @@ def course(request):
 def add_course(request):
     if request.method == "GET":
         return render(request, 'university/course/add_course.html')
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
     course_id = request.POST.get("course_id")
     name = request.POST.get("name")
@@ -40,14 +29,6 @@ def add_course(request):
         messages.success(request, "New course has been successfully added.")
     else:
         messages.info(request, "The course already exists and has not been changed.")
-
-<<<<<<< HEAD
-=======
-    Course_Id = request.POST.get("course_id")
-    Name = request.POST.get("name")
-    models.Course.objects.create(course_id=Course_Id, name=Name)
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
     return redirect("/course/")
 
 
@@ -76,10 +57,6 @@ def degree(request):
 def add_degree(request):
     if request.method == "GET":
         return render(request, 'university/degree/add_degree.html')
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
     Name = request.POST.get("name")
     Level = request.POST.get("level")
@@ -92,19 +69,12 @@ def add_degree(request):
         models.Degree.objects.create(name=Name, level=Level)
         messages.success(request, 'The new degree has been successfully added.')  
         return redirect("/degree/")
-<<<<<<< HEAD
-=======
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
     # Degree_Id = request.POST.get("degree_id")
     Name = request.POST.get("name")
     Level = request.POST.get("level")
     models.Degree.objects.create(name=Name, level=Level)
     return redirect("/degree/")
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
 
 def delete_degree(request):
@@ -234,12 +204,8 @@ def section(request):
 def add_section(request):
     if request.method == "GET":
         courses = models.Course.objects.all()
-<<<<<<< HEAD
-=======
 
 
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
         instructors = models.Instructor.objects.all()
         return render(request, 'university/section/add_section.html', {
             'courses': courses,
@@ -320,17 +286,16 @@ def add_objective(request):
         objective_code = request.POST.get("objective_code").strip()
         title = request.POST.get("title").strip()
         description = request.POST.get("description").strip()
-<<<<<<< HEAD
-        objective_code = request.POST.get("objective_code")
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-=======
 
         objective_code = request.POST.get("objective_code")
         title = request.POST.get("title")
         description = request.POST.get("description")
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
+
+        objective_code = request.POST.get("objective_code")
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+
         course_id = request.POST.get("course_id")
 
         course = models.Course.objects.get(course_id=course_id)
@@ -371,23 +336,6 @@ def add_objective(request):
             new_objective.save()
             messages.success(request, 'New objective added successfully.')
             return redirect("/objective/")
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
-        new_objective = models.Objective(
-            objective_code=objective_code,
-            title=title,
-            description=description,
-            course=course
-        )
-        new_objective.save()
-
-        return redirect("/objective/")
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
 
 def delete_objective(request):
@@ -411,15 +359,14 @@ def edit_objective(request, Objective_Code):
 
 # Evaluation
 def evaluation(request):
-<<<<<<< HEAD
-    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
-    return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
-=======
 
     queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
     return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
+
+    queryset = models.Evaluation.objects.select_related('course', 'degree', 'section','instructor','objective').all()
+    return render(request, 'university/evaluation/evaluation.html',{'queryset':queryset})
+
     queryset = models.Evaluation.objects.select_related('course', 'degree', 'section').all()
     return render(request, 'university/evaluation/evaluation.html', {'queryset': queryset})
 
@@ -436,11 +383,6 @@ def add_evaluation(request):
         return render(request, 'university/evaluation/add_evaluation.html', context)
     else:
 
-        evaluate_id = request.POST.get("evaluate_id")
-<<<<<<< HEAD
-=======
-
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
         method = request.POST.get("method")
         levelA_stu_num = request.POST.get("levelA_stu_num", None) or None
         levelB_stu_num = request.POST.get("levelB_stu_num", None) or None
@@ -463,17 +405,11 @@ def add_evaluation(request):
         if not objective:
             messages.error(request, "No Objective found with the provided code.")
             return redirect('/evaluation/add_evaluation/')
-<<<<<<< HEAD
-        course = models.Course.objects.filter(course_id=course_id).first()
-        degree = models.Degree.objects.filter(id=degree_id).first()
-        section = models.Section.objects.filter(id=section_id).first()
-=======
 
         course = models.Course.objects.filter(course_id=course_id).first()
         degree = models.Degree.objects.filter(id=degree_id).first()
         section = models.Section.objects.filter(id=section_id).first()
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
         new_evaluation = models.Evaluation(
             method=method,
@@ -489,14 +425,10 @@ def add_evaluation(request):
             objective=objective
         )
         new_evaluation.save()
-<<<<<<< HEAD
-        messages.success(request, "Evaluation added successfully.")
-        return redirect("/evaluation/")
-=======
+
 
         messages.success(request, "Evaluation added successfully.")
 
->>>>>>> 1a0fbb6933ba17146bb12b93b549ad8f8f5ee64c
 
         return redirect("/evaluation/")
 
