@@ -360,14 +360,30 @@ def evaluation(request):
 
 def add_evaluation(request):
     if request.method == "GET":
-        context = {
-            'courses': models.Section.objects.select_related('course').all(),
-            'degrees': models.Degree.objects.all(),
-            'sections': models.Section.objects.all(),
-            'instructors': models.Section.objects.select_related('instructor').all(),
-            'objectives': models.Objective.objects.all()
-        }
-        return render(request, 'university/evaluation/add_evaluation.html', context)
+            all_courses = models.Section.objects.select_related('course').all()
+            seen_courses = set()
+            unique_courses = []
+            for section in all_courses:
+                if section.course.name not in seen_courses:
+                    unique_courses.append(section)
+                    seen_courses.add(section.course.name)
+
+            all_sections = models.Section.objects.select_related('instructor').all()  # 确保加载了相关的instructor数据
+            seen_instructors = set()
+            unique_instructors = []
+
+            for section in all_sections:
+                if section.instructor.id not in seen_instructors:
+                    unique_instructors.append(section)
+                    seen_instructors.add(section.instructor.id)
+            context = {
+                'courses': unique_courses,
+                'degrees': models.Degree.objects.all(),
+                'sections': models.Section.objects.all(),
+                'instructors': unique_instructors,
+                'objectives': models.Objective.objects.all()
+            }
+            return render(request, 'university/evaluation/add_evaluation.html', context)
     elif request.method == "POST":
         method = request.POST.get("method")
         try:
