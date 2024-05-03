@@ -22,12 +22,13 @@
 
 ## 🌎 Environment setting
 1. Open Program_Eval/setting.py, find DATABASES setting, modify the USER and PASSWORD as you set.
+```python
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'programeval',
-        'USER': 'root',
-        'PASSWORD': '123456',
+        'USER': 'your_username',
+        'PASSWORD': 'your_password',
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }
