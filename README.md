@@ -30,12 +30,8 @@
    - On Linux/macOS, run `source env/bin/activate`.
    - On Windows, run `env\Scripts\activate`.
 
-## 🌎 Environment Variables
-1. **Create a .env File**
-   - This file should be placed next to this `README.md`.
-2. **Add Database Environment Variables**
-   - Include your PostgreSQL username, password, and port in the `.env` file.
-
+## 🌎 Environment setting
+1. Open Program_Eval/setting.py, find DATABASES setting, modify the USER and PASSWORD as you set.
 ## 📦 Package Installation
 1. **Install All Required Packages**
    - Run `pip install -r requirements.txt`.
