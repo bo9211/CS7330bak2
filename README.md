@@ -1,10 +1,10 @@
 # 🎓 Degree Evaluation - Project Setup
 
 ## 📌 Prerequisites
-- Python3 installed on  env
-- Mysql installed on  env
-- Django installed on  env
-- Mysql-Client installed on env
+- Python3 installed 
+- Mysql installed 
+- Django installed 
+- Mysql-Client installed 
 
 ## 🗄️ Database Setup
 1. **Create a Mysql Database**
@@ -22,6 +22,7 @@
 
 ## 🌎 Environment setting
 1. Open Program_Eval/setting.py, find DATABASES setting, modify the USER and PASSWORD as you set.
+
 ```python
 DATABASES = {
     'default': {
@@ -33,7 +34,7 @@ DATABASES = {
         'PORT': '3306',
     }
 }
-
+```
 
 ## ⚙️ Django Migrations
 1. **Make Migrations**
