@@ -17,9 +17,9 @@
 - Mysql-Client installed on env
 
 ## 🗄️ Database Setup
-1. **Create a PostgreSQL Database**
+1. **Create a Mysql Database**
    - Name your new database `programeval`.
-2. **Create a PostgreSQL User**
+2. **Create a Mysql User**
    - Set up a user with a unique username and password.
    - Grant this user all privileges on the `programeval` database.
 
