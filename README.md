@@ -1,15 +1,5 @@
 # 🎓 Degree Evaluation - Project Setup
 
-## 📋 Table of Contents
-1. [Prerequisites](#prerequisites)
-2. [Database Setup](#database-setup)
-3. [Virtual Environment](#virtual-environment)
-4. [Environment Variables](#environment-variables)
-5. [Package Installation](#package-installation)
-6. [Django Migrations](#django-migrations)
-7. [Load Data](#load-data)
-8. [Run the Server](#run-the-server)
-
 ## 📌 Prerequisites
 - Python 3 installed on  env
 - Mysql installed on  env
