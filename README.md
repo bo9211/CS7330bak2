@@ -1,7 +1,7 @@
 # 🎓 Degree Evaluation - Project Setup
 
 ## 📌 Prerequisites
-- Python 3 installed on  env
+- Python3 installed on  env
 - Mysql installed on  env
 - Django installed on  env
 - Mysql-Client installed on env
@@ -22,9 +22,17 @@
 
 ## 🌎 Environment setting
 1. Open Program_Eval/setting.py, find DATABASES setting, modify the USER and PASSWORD as you set.
-## 📦 Package Installation
-1. **Install All Required Packages**
-   - Run `pip install -r requirements.txt`.
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'programeval',
+        'USER': 'root',
+        'PASSWORD': '123456',
+        'HOST': '127.0.0.1',
+        'PORT': '3306',
+    }
+}
+
 
 ## ⚙️ Django Migrations
 1. **Make Migrations**
